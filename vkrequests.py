@@ -92,5 +92,12 @@ def log_in(**kwargs):
 
 
 @vk_request_errors
+def get_messages(**kwargs):
+    """
+    """
+    pass
+
+
+@vk_request_errors
 def track_visitor():
     api.stats.trackVisitor()

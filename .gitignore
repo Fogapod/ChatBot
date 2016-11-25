@@ -8,5 +8,4 @@ build/
 *.spec
 
 data/message_dump.txt
-testrun.py
 data/token.txt

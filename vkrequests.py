@@ -1,10 +1,6 @@
 # -*- coding: utf-8 -*-
 import time
-
 from libs import vk
-
-api = None
-
 
 def vk_request_errors(request):
     def request_errors(*args, **kwargs):
@@ -135,6 +131,11 @@ def get_user_id(**kwargs):
     user_link = kwargs.get('link')
     response = api.users.get(user_ids=user_link)
     return response[0]['id']
+
+
+@vk_request_errors
+def send_message(**kwargs):
+    text = kwargs['text']
 
 
 @vk_request_errors

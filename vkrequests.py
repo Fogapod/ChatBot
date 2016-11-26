@@ -5,7 +5,6 @@ from libs import vk
 
 api = None
 
-MARAT_ID = '183338574' # модель будет обучаться на ответах Марату
 
 def vk_request_errors(request):
     def request_errors(*args, **kwargs):
@@ -16,8 +15,8 @@ def vk_request_errors(request):
         except Exception as error:
             error = str(error)
             if 'Too many requests per second' in error:
-                print('sleeping')
-                time.sleep(2)
+                print(' sleeping')
+                time.sleep(0.33)
                 return request_errors(*args, **kwargs)
 
             elif 'Failed to establish a new connection' in error:
@@ -27,7 +26,9 @@ def vk_request_errors(request):
                 print('Incorrect password!')
 
             elif 'Read timed out' in error:
-                print('Response time exceeded!')
+                print('WARNING\nResponse time exceeded!')
+                time.sleep(0.33)
+                return request_errors(*args, **kwargs)
 
             elif 'Captcha' in error:
                 print('Capthca!!!!!')
@@ -88,28 +89,51 @@ def log_in(**kwargs):
     except UnboundLocalError: # session was not created
         raise Exception('Failed receiving session!')
 
-        track_visitor()
+    track_visitor()
 
     return session.access_token
+
+
+@vk_request_errors
+def get_messages_list(**kwargs):
+    """
+    """
+    offset = str(kwargs.get('offset', '0'))
+    count = '200'
+
+    response = api.messages.getDialogs(
+        count=count, offset=offset
+        )
+    return response
 
 
 @vk_request_errors
 def get_messages(**kwargs):
     """
     """
-    m_count = str(kwargs.get('count', '200'))
+    count = '200'
     offset = str(kwargs.get('offset', '0'))
+    friend_id = kwargs['id']
 
     response = api.messages.getHistory(
-        count=m_count, offset=offset,
-        rev='1', user_id=MARAT_ID
+        count=count, offset=offset,
+        rev='1', user_id=friend_id
         )
     return response
 
 
 @vk_request_errors
-def get_self_id():
-    response = api.users.get()
+def get_user_name(**kwargs):
+    uid = kwargs['uid']
+
+    response = api.users.get(user_ids=uid)
+    return response[0]['first_name'] + ' ' + response[0]['last_name']
+
+
+@vk_request_errors
+def get_user_id(**kwargs):
+    user_link = kwargs.get('link')
+    response = api.users.get(user_ids=user_link)
     return response[0]['id']
 
 

@@ -5,6 +5,8 @@ from libs import vk
 
 api = None
 
+MARAT_ID = '183338574' # модель будет обучаться на ответах Марату
+
 def vk_request_errors(request):
     def request_errors(*args, **kwargs):
         # Для вывода ошибки в консоль
@@ -15,7 +17,7 @@ def vk_request_errors(request):
             error = str(error)
             if 'Too many requests per second' in error:
                 print('sleeping')
-                time.sleep(0.66)
+                time.sleep(2)
                 return request_errors(*args, **kwargs)
 
             elif 'Failed to establish a new connection' in error:
@@ -95,7 +97,20 @@ def log_in(**kwargs):
 def get_messages(**kwargs):
     """
     """
-    pass
+    m_count = str(kwargs.get('count', '200'))
+    offset = str(kwargs.get('offset', '0'))
+
+    response = api.messages.getHistory(
+        count=m_count, offset=offset,
+        rev='1', user_id=MARAT_ID
+        )
+    return response
+
+
+@vk_request_errors
+def get_self_id():
+    response = api.users.get()
+    return response[0]['id']
 
 
 @vk_request_errors

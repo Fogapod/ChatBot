@@ -76,9 +76,10 @@ with open('data/message_dump.txt', 'a+') as f:
 							print('Warning {}.{}'.format(i,j))
 
 				print('Iteration {}.{}'.format(i+1, len(messages['items'])))
-				messages = vkr.get_messages(
-					offset=(i+1)*200, id=messages_list['items'][d]['user_id']
-					)
+			messages = vkr.get_messages(
+				offset=(i+1)*200, id=messages_list['items'][d]['user_id']
+				)
+			time.sleep(0.33)
 
 			print(u'Завершена обработка диалога №{}'.format((k)*200 + d+1))
 		messages_list = vkr.get_messages_list(offset=(k+1)*200)

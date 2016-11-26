@@ -50,17 +50,19 @@ with open('data/message_dump.txt', 'a+') as f:
 				id=messages_list['items'][d]['user_id']
 				)
 			time.sleep(0.33)
+
 			if 'chat_id' in messages_list['items'][d]:
 				print(u'Сообщения из беседы, пропускаю')
 				continue
 			else:
-				print(u'Сообщений в диалоге: {}::{}'.format(\
-					messages['count'],
-					vkr.get_user_name(
-						uid=messages_list['items'][d]['user_id']
+				print(
+					u'Сообщений в диалоге: {}::{}'.format(\
+						messages['count'],
+						vkr.get_user_name(
+							uid=messages_list['items'][d]['user_id']
+							)
 						)
 					)
-				)
 
 			for i in range(messages['count']//200 + 1):
 				for j in range(len(messages['items'])):

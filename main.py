@@ -45,10 +45,9 @@ def authorize():
 	global SELF_ID
 	SELF_ID = vkr.get_user_id()
 
-#vkr.FRIEND_ID = vkr.get_user_id(link=input(u'Короткая ссылка на страницу друга: '))
-#print(vkr.FRIEND_ID)
+#print(vkr.get_user_id(link=input(u'Короткая ссылка на страницу друга: ')))
 
-def message_getter(f):
+def message_getter(file):
 	messages_list = vkr.get_messages_list()
 	print(u'Обнаружено {} диалогов'.format(messages_list['count']))
 	for k in range(messages_list['count']//200 + 1):
@@ -75,7 +74,7 @@ def message_getter(f):
 				for j in range(len(messages['items'])):
 					if messages['items'][j]['body'] is not '':
 						try:
-							f.write(
+							file.write(
 							'{} {}\n'.format(\
 							'You' if messages['items'][j]['from_id'] ==\
 								SELF_ID else 'Friend::{}::{}'.format(\

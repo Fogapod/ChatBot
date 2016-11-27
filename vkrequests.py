@@ -56,7 +56,7 @@ def log_in(**kwargs):
 
     :return: string ( token )
     """
-    scope = '4096' # messages permission
+    scope = '69632' # messages, offline permissions
     app_id = '5746984'
 
     token = kwargs.get('token')

@@ -4,14 +4,11 @@ import tensorflow as tf
 import numpy as np
 import os.path
 import random
-import pickle
 import nltk
 import time
 import re
 
 from nltk.stem import WordNetLemmatizer
-from nltk.tokenize import word_tokenize
-from collections import Counter
 
 class Profiler():
 	def __enter__(self):

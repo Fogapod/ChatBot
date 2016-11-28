@@ -38,7 +38,6 @@ def vk_request_errors(request):
 
             else:
                 print('\nERROR! ' + error + '\n')
-
             return False
         else:
             return response

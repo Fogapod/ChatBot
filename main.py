@@ -84,6 +84,15 @@ def message_getter(file):
 							import sys
 							reload(sys)
 							sys.setdefaultencoding('utf-8')
+							file.write(
+							'{} {}\n'.format(\
+							'You' if messages['items'][j]['from_id'] ==\
+								SELF_ID else 'Friend::{}::{}'.format(\
+									messages['items'][j]['from_id'], uname
+									),
+								messages['items'][j]['body']
+								)
+							)
 
 				print('Iteration {}.{}'.format(i+1, len(messages['items'])))
 				messages = vkr.get_messages(

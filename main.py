@@ -4,11 +4,11 @@ import tensorflow as tf
 import numpy as np
 import os.path
 import random
-import nltk
+#import nltk
 import time
 import re
 
-from nltk.stem import WordNetLemmatizer
+#from nltk.stem import WordNetLemmatizer
 
 class Profiler():
 	def __enter__(self):
@@ -70,34 +70,20 @@ def message_getter(file):
 			for i in range(messages['count']//200 + 1):
 				for j in range(len(messages['items'])):
 					if messages['items'][j]['body'] is not '':
-						try:
-							file.write(
-							'{} {}\n'.format(\
-							'You' if messages['items'][j]['from_id'] ==\
-								SELF_ID else 'Friend::{}::{}'.format(\
-									messages['items'][j]['from_id'], uname
-									),
-								messages['items'][j]['body']
-								)
+						file.write(
+						'{} {}\n'.format(\
+						'You' if messages['items'][j]['from_id'] ==\
+							SELF_ID else 'Friend::{}::{}'.format(\
+								messages['items'][j]['from_id'], uname
+								),
+							messages['items'][j]['body']
 							)
-						except UnicodeEncodeError: # problem with emoji on win
-							import sys
-							reload(sys)
-							sys.setdefaultencoding('utf-8')
-							file.write(
-							'{} {}\n'.format(\
-							'You' if messages['items'][j]['from_id'] ==\
-								SELF_ID else 'Friend::{}::{}'.format(\
-									messages['items'][j]['from_id'], uname
-									),
-								messages['items'][j]['body']
-								)
-							)
+						)
 
 				print('Iteration {}.{}'.format(i+1, len(messages['items'])))
 				messages = vkr.get_messages(
 					offset=(i+1)*200, id=messages_list['items'][d]['user_id']
-					)
+				)
 				time.sleep(0.33)
 
 			print(u'Завершена обработка диалога №{}'.format((k)*200 + d+1))
@@ -111,11 +97,12 @@ if os.path.exists('data/message_dump.txt'):
 			with open('data/message_dump.txt', 'a+') as f:
 				f.seek(0)
 				f.truncate()
-				message_getter(f)
+				with Profiler():
+					message_getter(f)
 				break
 		elif ans.lower() == 'n':
 			break
 		else:
 			print(u'Неизвестный ответ.')
 
-lemmatizer = WordNetLemmatizer()
+#lemmatizer = WordNetLemmatizer()

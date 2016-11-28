@@ -90,6 +90,20 @@ def log_in(**kwargs):
 
 
 @vk_request_errors
+def get_long_poll_data():
+    response = api.messages.getLongPollServer(need_pts='1')
+    ts = response['ts']
+    pts = response['pts']
+    return ts, pts
+
+@vk_request_errors
+def test(**kwargs):
+    new_ts = kwargs.get('ts')
+    new_pts = kwargs.get('pts')
+    ts, pts = get_long_poll_data()
+    return api.messages.getLongPollHistory(ts=ts if ts else new_ts,pts=pts if pts else new_pts)
+
+@vk_request_errors
 def get_messages_list(**kwargs):
     """
     """

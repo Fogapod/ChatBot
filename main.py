@@ -72,7 +72,7 @@ def message_getter(file):
 					msg = messages['items'][j]
 					if msg['body'] is not '':
 						msg['body'] = re.sub(r'(https?://)?(m\.)?vk\.com/(.*)$', '__vkurl__', msg['body'])
-						msg['body'] = re.sub(r'https?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*(),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+', '__url__', msg['body'])
+						msg['body'] = re.sub(r'https?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*(),#%]|(?:%[0-9a-fA-F][0-9a-fA-F]))+', '__url__', msg['body'])
 						file.write(
 						'{} {}\n'.format(\
 						'You' if msg['from_id'] == SELF_ID else 'Friend::{}::{}'.format(\
@@ -106,4 +106,9 @@ if os.path.exists('data/message_dump.txt'):
 		else:
 			print('Неизвестный ответ.')
 
+while True:
+	ts, pts = vkr.get_long_poll_data()
+	response = vkr.test(ts=ts,pts=pts)
+	print(response)
+	time.sleep(2)
 #lemmatizer = WordNetLemmatizer()

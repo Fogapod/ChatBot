@@ -81,7 +81,9 @@ def message_getter(file):
 								)
 							)
 						except UnicodeEncodeError: # problem with emoji on win
-							print('Warning {}.{}'.format(i,j))
+							import sys
+							reload(sys)
+							sys.setdefaultencoding('utf-8')
 
 				print('Iteration {}.{}'.format(i+1, len(messages['items'])))
 				messages = vkr.get_messages(

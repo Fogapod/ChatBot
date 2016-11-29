@@ -103,6 +103,12 @@ if os.path.exists('data/message_dump.txt'):
 			break
 		else:
 			print('Неизвестный ответ.')
+else:
+	with open('data/message_dump.txt', 'a+') as f:
+		client.message_getter(f)
+
+response = vkr.get_new_messages()
+print(response)
 
 while True:
 	ts, pts = vkr.get_long_poll_data()

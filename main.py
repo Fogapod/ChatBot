@@ -1,14 +1,12 @@
 # -*- coding: utf-8 -*-
 import vkrequests as vkr
-import tensorflow as tf
+#import tensorflow as tf
 import numpy as np
 import os.path
 import random
-#import nltk
 import time
 import re
 
-#from nltk.stem import WordNetLemmatizer
 
 class Profiler():
 	def __enter__(self):
@@ -111,4 +109,3 @@ while True:
 	response = vkr.test(ts=ts,pts=pts)
 	print(response)
 	time.sleep(2)
-#lemmatizer = WordNetLemmatizer()

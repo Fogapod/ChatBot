@@ -54,7 +54,7 @@ def stringify_values(dictionary):
     stringified_values_dict = {}
     for key, value in dictionary.items():
         if isinstance(value, Iterable) and not isinstance(value, STRING_TYPES):
-            value = u','.join(map(str_type, value))
+            value = ','.join(map(str_type, value))
         stringified_values_dict[key] = value
     return stringified_values_dict
 

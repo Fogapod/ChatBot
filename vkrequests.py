@@ -97,11 +97,35 @@ def get_long_poll_data():
     return ts, pts
 
 @vk_request_errors
-def test(**kwargs):
-    new_ts = kwargs.get('ts')
-    new_pts = kwargs.get('pts')
-    ts, pts = get_long_poll_data()
-    return api.messages.getLongPollHistory(ts=ts if ts else new_ts,pts=pts if pts else new_pts)
+def get_new_messages(**kwargs):
+    ts = kwargs.get('ts')
+    pts = kwargs.get('pts')
+    if not ts or not pts:
+        new_ts, new_pts = get_long_poll_data()
+    return api.messages.getLongPollHistory(
+        ts=ts if ts else new_ts,
+        pts=pts if pts else new_pts
+    )
+
+
+@vk_request_errors
+def send_message(**kwargs):
+    """
+    """
+    gid = None
+    uid = kwargs.get('uid')
+    if not uid:
+        gid = kwargs['gid']
+    text = kwargs['text']
+    forward = kwargs.get('forward')
+
+    response = api.messages.send(
+        peer_id=uid,message=text,
+        forward_messaged=forward,
+        chat_id=gid
+    )
+    return response
+
 
 @vk_request_errors
 def get_messages_list(**kwargs):
@@ -144,11 +168,6 @@ def get_user_id(**kwargs):
     user_link = kwargs.get('link')
     response = api.users.get(user_ids=user_link)
     return response[0]['id']
-
-
-@vk_request_errors
-def send_message(**kwargs):
-    text = kwargs['text']
 
 
 @vk_request_errors

@@ -81,10 +81,9 @@ def log_in(**kwargs):
     global api
     try:
         api = vk.API(session, v='5.60')
+        track_visitor()
     except UnboundLocalError: # session was not created
         raise Exception('Failed receiving session!')
-
-    track_visitor()
 
     return session.access_token
 
@@ -118,11 +117,12 @@ def send_message(**kwargs):
         gid = kwargs['gid']
     text = kwargs['text']
     forward = kwargs.get('forward')
+    rnd_id = kwargs['rnd_id']
 
     response = api.messages.send(
         peer_id=uid,message=text,
-        forward_messaged=forward,
-        chat_id=gid
+        forward_messages=forward,
+        chat_id=gid,random_id=rnd_id
     )
     return response
 

@@ -102,94 +102,97 @@ class Client:
 		url = self.STREAM_URL.format(server, act, key, ts, wait, mode, v)
 		return url
 
-client = Client()
+def main():
+	client = Client()
 
-client.authorize()
-if os.path.exists('data/message_dump.txt'):
-	while True:
-		ans = input('Файл с историей сообщений уже существует. Заменить его? (y/n) ')
-		if ans.lower() == 'y' or ans == '':
-			with open('data/message_dump.txt', 'a+') as f:
-				f.seek(0)
-				f.truncate()
-				with Profiler():
-					client.message_getter(f)
+	client.authorize()
+	if os.path.exists('data/message_dump.txt'):
+		while True:
+			ans = input('Файл с историей сообщений уже существует. Заменить его? (y/n) ')
+			if ans.lower() == 'y' or ans == '':
+				with open('data/message_dump.txt', 'a+') as f:
+					f.seek(0)
+					f.truncate()
+					with Profiler():
+						client.message_getter(f)
+					break
+			elif ans.lower() == 'n':
 				break
-		elif ans.lower() == 'n':
-			break
-		else:
-			print('Неизвестный ответ.')
-else:
-	with open('data/message_dump.txt', 'a+') as f:
-		client.message_getter(f)
+			else:
+				print('Неизвестный ответ.')
+	else:
+		with open('data/message_dump.txt', 'a+') as f:
+			client.message_getter(f)
 
-last_rnd_id = 0
+	last_rnd_id = 0
 
-lpd = vkr.get_long_poll_data()
-url = client.set_url(
-lpd['server'],
-lpd['key'],
-lpd['ts']
-)
+	lpd = vkr.get_long_poll_data()
+	url = client.set_url(
+	lpd['server'],
+	lpd['key'],
+	lpd['ts']
+	)
 
-c = pycurl.Curl()
-m = pycurl.CurlMulti()
-print('-'*5 + 'Начинаю слушать long poll' + '-'*5)
-while True:
-	s = BytesIO()
-	c.setopt(c.URL, url)
-	c.setopt(c.WRITEFUNCTION, s.write)
-	m.add_handle(c)
-
+	c = pycurl.Curl()
+	m = pycurl.CurlMulti()
+	print('-'*5 + 'Начинаю слушать long poll' + '-'*5)
 	while True:
-		ret, num_handles = m.perform()
-		if ret != pycurl.E_CALL_MULTI_PERFORM:
-			break
+		s = BytesIO()
+		c.setopt(c.URL, url)
+		c.setopt(c.WRITEFUNCTION, s.write)
+		m.add_handle(c)
 
-	while num_handles:
-		time.sleep(1)
-		while 1:
+		while True:
 			ret, num_handles = m.perform()
 			if ret != pycurl.E_CALL_MULTI_PERFORM:
 				break
-	response = s.getvalue().decode('utf-8')
-	response = json.loads(response)
 
-	m.remove_handle(c)
+		while num_handles:
+			time.sleep(1)
+			while 1:
+				ret, num_handles = m.perform()
+				if ret != pycurl.E_CALL_MULTI_PERFORM:
+					break
+		response = s.getvalue().decode('utf-8')
+		response = json.loads(response)
 
+		m.remove_handle(c)
+
+		print(response)
+
+		url = client.set_url(
+			lpd['server'],
+			lpd['key'],
+			response['ts']
+		)
+
+		for update in response['updates']:
+			if update[0] is 4 and update[7] != last_rnd_id and update[3]:
+				text = update[6]
+				if text.lower() == 'ершов' or\
+						text.lower() == 'женя' or\
+						text.lower() == 'жень' or\
+						text.lower() == 'женька' or\
+						text.lower() == 'жека':
+					text = 'А'
+				elif re.sub('^( )*', '', text).startswith('/'):
+					text = text[1:]
+					if re.match('^(скажи)|(say) ', text.lower()):
+						text = re.sub('^((скажи)|(say)) ', '', text.lower())
+						text = re.search('(^(.*)\Wto)|(^(.*)\W?/)|^(.*)', text).group()
+						text = re.sub('\W(.*)$', '', text)
+					else:
+						text = 'Попка молодец🐔' if random.randint(0,1) else 'Попка дурак🐔'
+				else:
+					continue
+				vkr.send_message(
+					uid=update[3],
+					text=text + "'",
+					rnd_id=update[7]+1
+				)
+				last_rnd_id = update[7]+1
+	response = vkr.get_new_messages()
 	print(response)
 
-	url = client.set_url(
-		lpd['server'],
-		lpd['key'],
-		response['ts']
-	)
-
-	for update in response['updates']:
-		if update[0] is 4 and update[7] != last_rnd_id and update[3]:
-			text = update[6]
-			if text.lower() == 'ершов' or\
-					text.lower() == 'женя' or\
-					text.lower() == 'жень' or\
-					text.lower() == 'женька' or\
-					text.lower() == 'жека':
-				text = 'А'
-			elif re.sub('^( )*', '', text).startswith('/'):
-				text = text[1:]
-				if re.match('^(скажи)|(say) ', text.lower()):
-					text = re.sub('^((скажи)|(say)) ', '', text.lower())
-					text = re.search('(^(.*)\Wto)|(^(.*)\W?/)|^(.*)', text).group()
-					text = re.sub('\W(.*)$', '', text)
-				else:
-					text = 'Попка молодец🐔' if random.randint(0,1) else 'Попка дурак🐔'
-			else:
-				continue
-			vkr.send_message(
-				uid=update[3],
-				text=text + "'",
-				rnd_id=update[7]+1
-			)
-			last_rnd_id = update[7]+1
-response = vkr.get_new_messages()
-print(response)
-
+if __name__ == '__main__':
+	main()

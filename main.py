@@ -178,7 +178,7 @@ while True:
 				text = text[1:]
 				if re.match('^(скажи)|(say) ', text.lower()):
 					text = re.sub('^((скажи)|(say)) ', '', text.lower())
-					text = re.search('(^(.*)\Wto)|(^(.*)\W?/)', text).group()
+					text = re.search('(^(.*)\Wto)|(^(.*)\W?/)|^(.*)', text).group()
 					text = re.sub('\W(.*)$', '', text)
 				else:
 					text = 'Попка молодец🐔' if random.randint(0,1) else 'Попка дурак🐔'

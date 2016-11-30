@@ -75,7 +75,7 @@ class Client:
 						msg = messages['items'][j]
 						text = msg['body']
 						if text is not '':
-							text = re.sub(r'(https?://)?(?:m\.)?(v|V)(k|K)\.com/(?:.*)', '__vkurl__', text)
+							text = re.sub(r'(https?://)?(?:m\.)?(v)(k)\.com/(?:.*)', '__vkurl__', text.lower())
 							text = re.sub(r'''(?i)\b((?:[a-z][\w-]+:(?:/{1,3}|[a-z0-9%])|www\d{0,3}[.]|[a-z0-9.\-]+[.][a-z]{2,4}/)(?:[^\s()<>]+|(([^\s()<>]+|(([^\s()<>]+)))*))+(?:(([^\s()<>]+|(([^\s()<>]+)))*)|[^\s`!()[]{};:'".,<>?«»“”‘’]))''', '__url__', text)
 							file.write(
 							'{} {}\n'.format(\

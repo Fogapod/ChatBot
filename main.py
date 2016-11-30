@@ -24,23 +24,23 @@ class Client:
 	def authorize(self):
 		if os.path.exists('data/token.txt'):
 			token = open('data/token.txt', 'r').read()
-
-			if vkr.log_in(token=token):
-				print('Успешная авторизация')
-			else:
-				print('Авторизация не удалась')
-
-		else:
-			while True:
-				login = input('Логин: ')
-				password = input('Пароль: ')
-				new_token = vkr.log_in(login=login, password=password)
-				if new_token:
+			if token:
+        		if vkr.log_in(token=token):
 					print('Успешная авторизация')
-					open('data/token.txt', 'w').write(new_token)
-					break
 				else:
 					print('Авторизация не удалась')
+
+			else:
+				while True:
+					login = input('Логин: ')
+					password = input('Пароль: ')
+					new_token = vkr.log_in(login=login, password=password)
+					if new_token:
+						print('Успешная авторизация')
+						open('data/token.txt', 'w').write(new_token)
+						break
+					else:
+						print('Авторизация не удалась')
 
 		self.SELF_ID = vkr.get_user_id()
 

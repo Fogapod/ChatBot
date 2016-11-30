@@ -93,7 +93,7 @@ def get_long_poll_data():
     response = api.messages.getLongPollServer(need_pts='1')
     ts = response['ts']
     pts = response['pts']
-    return ts, pts
+    return response
 
 @vk_request_errors
 def get_new_messages(**kwargs):

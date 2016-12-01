@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 import vklogic as vkl
-import vkrequests as vkr
 
 from io import BytesIO
 import random

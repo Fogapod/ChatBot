@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import time
+
 from libs import vk
 
 def vk_request_errors(request):
@@ -11,7 +12,7 @@ def vk_request_errors(request):
         except Exception as error:
             error = str(error)
             if 'Too many requests per second' in error or 'timed out' in error:
-                print('    sleeping')
+                print('    sleeping...')
                 time.sleep(0.33)
                 return request_errors(*args, **kwargs)
 

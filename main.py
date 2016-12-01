@@ -72,7 +72,7 @@ def main():
 					text = 'А'
 					mark_msg = False
 				elif 'HALP' in text:
-					text = 'Чем могу помочь?'
+					text = 'Кому нужна помощь?!'
 				elif re.sub('^( )*', '', text).startswith('/'):
 					text = text[1:]
 					if text.startswith('/'):

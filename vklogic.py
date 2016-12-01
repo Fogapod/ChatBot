@@ -113,6 +113,13 @@ class Client:
 				print('Завершена обработка диалога №{}'.format((k)*200 + d+1))
 			messages_list = vkr.get_messages_list(offset=(k+1)*200)
 
+	def reply(self, **kwargs):
+		vkr.send_message(
+			uid = kwargs.get('uid'),
+			text = kwargs.get('text'),
+			rnd_id = kwargs.get('rnd_id')
+		)
+
 	def make_url(self, keep_ts=False):
 		if keep_ts:
 			self.lpd['ts'] = keep_ts

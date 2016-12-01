@@ -96,14 +96,13 @@ def main():
 						text = 'Попка молодец🐔' if random.randint(0,1) else 'Попка дурак🐔'
 				else:
 					continue
-				vkr.send_message(
-					uid=update[3],
-					text=text + "'",
-					rnd_id=update[7]+1
+
+				client.reply(
+					uid = update[3],
+					text = text + "'",
+					rnd_id = update[7] + 1
 				)
-				last_rnd_id = update[7]+1
-	response = vkr.get_new_messages()
-	print(response)
+				last_rnd_id = update[7] + 1
 
 if __name__ == '__main__':
 	main()

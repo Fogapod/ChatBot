@@ -20,20 +20,9 @@ class Profiler():
 #print(vkr.get_user_id(link=input('Короткая ссылка на страницу друга: ')))
 def animate_loading(text, delay):
 	loading_symbols = ('|', '/', '-', '\\')
-	i = 0
-	print('#{} {}\r'.format(text, loading_symbols[i]), end='')
-	i += 1
-	time.sleep(delay/4)
-	print('#{} {}\r'.format(text, loading_symbols[i]), end='')
-	i += 1
-	time.sleep(delay/4)
-	print('#{} {}\r'.format(text, loading_symbols[i]), end='')
-	i += 1
-	time.sleep(delay/4)
-	print('#{} {}\r'.format(text, loading_symbols[i]), end='')
-	i += 1
-	time.sleep(delay/4)
-	i = 0
+	for i, symbol in enumerate(loading_symbols):
+		print('#{} {}\r'.format(text, symbol), end='')
+		time.sleep(delay/len(loading_symbols))
 
 def main():
 	client = vkl.Client()

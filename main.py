@@ -92,7 +92,7 @@ def main():
 
 				client.reply(
 					uid = update[3],
-					text = text + "'",
+					text = text + "'" if mark_mag else text,
 					rnd_id = update[7] + 1
 				)
 				last_rnd_id = update[7] + 1

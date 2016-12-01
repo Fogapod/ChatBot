@@ -9,13 +9,6 @@ import time
 import json
 import re
 
-class Profiler():
-	def __enter__(self):
-		self._startTime = time.time()
-
-	def __exit__(self, type, value, traceback):
-		print('Время выполнения: {:.3f} с.'.format(time.time() - self._startTime))
-
 #print(vkr.get_user_id(link=input('Короткая ссылка на страницу друга: ')))
 def animate_loading(text, delay):
 	loading_symbols = ('|', '/', '-', '\\')

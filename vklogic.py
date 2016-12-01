@@ -3,7 +3,12 @@ import vkrequests as vkr
 
 import os
 
-#print(vkr.get_user_id(link=input('Короткая ссылка на страницу друга: ')))
+class Profiler():
+	def __enter__(self):
+		self._startTime = time.time()
+
+	def __exit__(self, type, value, traceback):
+		print('Время выполнения: {:.3f} с.'.format(time.time() - self._startTime))
 
 class Client:
 	def __init__(self):

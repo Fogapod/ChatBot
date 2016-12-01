@@ -8,7 +8,6 @@ import pycurl
 import time
 import json
 import re
-import os
 
 class Profiler():
 	def __enter__(self):

@@ -8,6 +8,9 @@ import time
 import json
 import re
 
+__version__ = '0.1.0'
+__author__ = 'Eugene Ershov http://vk.com/fogapod'
+
 #print(vkr.get_user_id(link=input('Короткая ссылка на страницу друга: ')))
 def animate_loading(text, delay):
 	loading_symbols = ('|', '/', '-', '\\')
@@ -75,11 +78,18 @@ def main():
 						words = ' '
 					if re.match(u'^((help)|(помощь))', words[0].lower()):
 						text =\
-'''Версия: 0.1
+'''Версия: {ver}
 Я умею:
-	Говорить то, что вы попросите (/say text|/скажи текст)
-	Вызывать помощь (/help|/помощь)
-Получить ответ без кавычки' в конце: используйте //'''
+*Говорить то, что вы попросите
+(/say text|/скажи текст)
+*Вызывать помощь
+(/help|/помощь)
+Получить ответ без кавычки' в конце: используйте //
+
+Автор: {author}'''.format(\
+ver = __version__,
+author = __author__
+)
 
 					elif re.match(u'^((скажи)|(say))', words[0].lower()):
 						del words[0]

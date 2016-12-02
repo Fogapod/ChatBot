@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 import vklogic as vkl
-import vkrequests as vkr
 
 from io import BytesIO
 import random
@@ -9,7 +8,21 @@ import time
 import json
 import re
 
-#print(vkr.get_user_id(link=input('Короткая ссылка на страницу друга: ')))
+__version__ = '0.1.0'
+__author__ = 'Eugene Ershov - http://vk.com/fogapod'
+
+__info__ = '''
+Версия: {ver}
+Я умею:
+*Говорить то, что вы попросите
+(/say text|/скажи текст)
+*Вызывать помощь
+(/help|/помощь)
+
+Автор: {author}'''.format(\
+	ver = __version__, author = __author__
+)
+
 def animate_loading(text, delay):
 	loading_symbols = ('|', '/', '-', '\\')
 	for i, symbol in enumerate(loading_symbols):
@@ -19,8 +32,10 @@ def animate_loading(text, delay):
 def main():
 	client = vkl.Client()
 	
-	client.authorize()
-	client.save_full_message_history()
+	while not client.authorization():
+		continue
+
+	#client.save_full_message_history()
 
 	url = client.make_url()
 	c = pycurl.Curl()
@@ -38,9 +53,9 @@ def main():
 			if ret != pycurl.E_CALL_MULTI_PERFORM:
 				break
 
-		while num_handles:
+		while num_handles: # main loop
 			animate_loading('Listening long poll...', 1)
-			while 1:
+			while 1: # main loop (2)
 				ret, num_handles = m.perform()
 				if ret != pycurl.E_CALL_MULTI_PERFORM:
 					break
@@ -64,35 +79,34 @@ def main():
 						text.lower() == 'жэка':
 					text = 'А'
 					mark_msg = False
+
 				elif 'HALP' in text:
 					text = 'Кому нужна помощь?!'
+
 				elif re.sub('^( )*', '', text).startswith('/'):
 					text = text[1:]
-					if text.startswith('/'):
-						text = text[1:]
-						mark_msg = False
 					words = text.split()
 					if not words: 
 						words = ' '
-					if re.match(u'^((help)|(помощь))', words[0].lower()):
-						text =\
-'''Версия: 0.1
-Я умею:
-	Говорить то, что вы попросите (/say text|/скажи текст)
-	Вызывать помощь (/help|/помощь)
-Получить ответ без кавычки' в конце: используйте //'''
 
+					if words[0].startswith('/'):
+						words[0] = words[0][1:]
+						mark_msg = False
+
+					if re.match(u'^((help)|(помощь))', words[0].lower()):
+						text = __info__
 					elif re.match(u'^((скажи)|(say))', words[0].lower()):
 						del words[0]
 						text = ' '.join(words)
 					else:
 						text = 'Попка молодец🐔' if random.randint(0,1) else 'Попка дурак🐔'
+
 				else:
 					continue
 
 				client.reply(
 					uid = update[3],
-					text = text + "'",
+					text = text + "'" if mark_msg else text,
 					rnd_id = update[7] + 1
 				)
 				last_rnd_id = update[7] + 1

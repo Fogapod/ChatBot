@@ -15,40 +15,41 @@ class Client:
 		self.SELF_ID = None
 		self.lpd = None
 
-	def authorize(self):
-		if os.path.exists('data/token.txt'):
-			token = open('data/token.txt', 'r').read()
-			if token:
-				if vkr.log_in(token=token):
-					print('Успешная авторизация')
-				else:
-					print('Авторизация не удалась')
+	def authorization(self):
+		try:
+			with open('data/token.txt', 'r') as token_file:
+				token = token_file.readlines()[0][:-1]
+		except FileNotFoundError:
+			token = None
 
+		if token:
+			if vkr.log_in(token=token):
+				return True
 			else:
-				while True:
-					login = input('Логин: ')
-					password = input('Пароль: ')
-					new_token = vkr.log_in(login=login, password=password)
-					if new_token:
-						print('Успешная авторизация')
-						open('data/token.txt', 'w').write(new_token)
-						break
-					else:
-						print('Авторизация не удалась')
+				return False
+
 		else:
-			while True:
-				login = input('Логин: ')
-				password = input('Пароль: ')
-				new_token = vkr.log_in(login=login, password=password)
-				if new_token:
-					print('Успешная авторизация')
-					open('data/token.txt', 'w').write(new_token)
-					break
-				else:
-					print('Авторизация не удалась')
+			login, password = self.get_login_and_password()
+			new_token = vkr.log_in(login=login, password=password)
+			if new_token:
+				with open('data/token.txt', 'w') as token_file:
+					token_file.write('{}\n{}'.format(\
+						new_token, 'НИКОМУ НЕ ПОКАЗЫВАЙТЕ СОДЕРЖИМОЕ ЭТОГО ФАЙЛА'
+						)
+					)
+				print('3')
+				return True
+			else:
+				print('4')
+				return False
 
 
 		self.SELF_ID = vkr.get_user_id()
+
+	def get_login_and_password(self):
+		login = input('Логин: ')
+		password = input('Пароль: ')
+		return login, password
 
 	def save_full_message_history(self):
 		if os.path.exists('data/message_dump.txt'):

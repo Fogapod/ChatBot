@@ -14,12 +14,11 @@ sys.setdefaultencoding('utf-8')
 import logging
 logging.captureWarnings(True)
 
-p = '/storage/emulated/0/Git/ChatBot/'
 #print(vkr.get_user_id(link=input('Короткая ссылка на страницу друга: ')))
 def animate_loading(text, delay):
 	loading_symbols = ('|', '/', '-', '\\')
 	for i, symbol in enumerate(loading_symbols):
-		print('#{} {}\r'.format(text, symbol), end='')
+		print('#{} {}\r'.format(text, symbol)),
 		time.sleep(delay/len(loading_symbols))
 
 def main():
@@ -34,7 +33,7 @@ def main():
 	while True:
 		response = requests.post(url)
 		response = json.loads(response.content)
-
+		print(response)
 		url = client.make_url(keep_ts=response['ts'])
 
 		for update in response['updates']:

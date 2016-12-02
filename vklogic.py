@@ -3,6 +3,8 @@ import vkrequests as vkr
 
 import os
 
+p = '/storage/emulated/0/Git/ChatBot/'
+
 class Profiler():
 	def __enter__(self):
 		self._startTime = time.time()
@@ -16,8 +18,8 @@ class Client:
 		self.lpd = None
 
 	def authorize(self):
-		if os.path.exists('data/token.txt'):
-			token = open('data/token.txt', 'r').read()
+		if os.path.exists(p+'data/token.txt'):
+			token = open(p+'data/token.txt', 'r').read()
 			if token:
 				if vkr.log_in(token=token):
 					print('Успешная авторизация')
@@ -31,7 +33,7 @@ class Client:
 					new_token = vkr.log_in(login=login, password=password)
 					if new_token:
 						print('Успешная авторизация')
-						open('data/token.txt', 'w').write(new_token)
+						open(p+'data/token.txt', 'w').write(new_token)
 						break
 					else:
 						print('Авторизация не удалась')
@@ -42,7 +44,7 @@ class Client:
 				new_token = vkr.log_in(login=login, password=password)
 				if new_token:
 					print('Успешная авторизация')
-					open('data/token.txt', 'w').write(new_token)
+					open(p+'data/token.txt', 'w').write(new_token)
 					break
 				else:
 					print('Авторизация не удалась')
@@ -51,7 +53,7 @@ class Client:
 		self.SELF_ID = vkr.get_user_id()
 
 	def save_full_message_history(self):
-		if os.path.exists('data/message_dump.txt'):
+		if os.path.exists(p+'data/message_dump.txt'):
 			while True:
 				ans = raw_input('Файл с историей сообщений уже существует. Заменить его? (y/n) ')
 				if ans.lower() == 'y' or ans == '':
@@ -66,7 +68,7 @@ class Client:
 				else:
 					print('Неизвестный ответ.')
 		else:
-			with open('data/message_dump.txt', 'a+') as f:
+			with open(p+'data/message_dump.txt', 'a+') as f:
 				client.message_getter(f)
 
 	def message_getter(self, file):

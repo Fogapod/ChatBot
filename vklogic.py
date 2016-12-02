@@ -26,8 +26,8 @@ class Client:
 
 			else:
 				while True:
-					login = input('Логин: ')
-					password = input('Пароль: ')
+					login = raw_input('Логин: ')
+					password = raw_input('Пароль: ')
 					new_token = vkr.log_in(login=login, password=password)
 					if new_token:
 						print('Успешная авторизация')
@@ -37,8 +37,8 @@ class Client:
 						print('Авторизация не удалась')
 		else:
 			while True:
-				login = input('Логин: ')
-				password = input('Пароль: ')
+				login = raw_input('Логин: ')
+				password = raw_input('Пароль: ')
 				new_token = vkr.log_in(login=login, password=password)
 				if new_token:
 					print('Успешная авторизация')
@@ -53,7 +53,7 @@ class Client:
 	def save_full_message_history(self):
 		if os.path.exists('data/message_dump.txt'):
 			while True:
-				ans = input('Файл с историей сообщений уже существует. Заменить его? (y/n) ')
+				ans = raw_input('Файл с историей сообщений уже существует. Заменить его? (y/n) ')
 				if ans.lower() == 'y' or ans == '':
 					with open('data/message_dump.txt', 'a+') as f:
 						f.seek(0)

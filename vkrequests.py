@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import time
 
-from libs import vk
+import vk
 
 def vk_request_errors(request):
     def request_errors(*args, **kwargs):

@@ -1,13 +1,20 @@
 # -*- coding: utf-8 -*-
 import vklogic as vkl
 
-from io import BytesIO
 import random
-import pycurl
+import requests
 import time
 import json
 import re
 
+# qpy
+import sys
+reload(sys)
+sys.setdefaultencoding('utf-8')
+import logging
+logging.captureWarnings(True)
+
+p = '/storage/emulated/0/Git/ChatBot/'
 #print(vkr.get_user_id(link=input('Короткая ссылка на страницу друга: ')))
 def animate_loading(text, delay):
 	loading_symbols = ('|', '/', '-', '\\')
@@ -22,32 +29,11 @@ def main():
 	client.save_full_message_history()
 
 	url = client.make_url()
-	c = pycurl.Curl()
-	m = pycurl.CurlMulti()
 
 	last_rnd_id = 1
 	while True:
-		s = BytesIO()
-		c.setopt(c.URL, url)
-		c.setopt(c.WRITEFUNCTION, s.write)
-		m.add_handle(c)
-
-		while True:
-			ret, num_handles = m.perform()
-			if ret != pycurl.E_CALL_MULTI_PERFORM:
-				break
-
-		while num_handles:
-			animate_loading('Listening long poll...', 1)
-			while 1:
-				ret, num_handles = m.perform()
-				if ret != pycurl.E_CALL_MULTI_PERFORM:
-					break
-
-		m.remove_handle(c)
-		response = s.getvalue()
-		response = response.decode('utf-8')
-		response = json.loads(response)
+		response = requests.post(url)
+		response = json.loads(response.content)
 
 		url = client.make_url(keep_ts=response['ts'])
 
@@ -55,12 +41,12 @@ def main():
 			if update[0] is 4 and update[7] != last_rnd_id and update[3]:
 				text = update[6]
 				mark_msg = True
-				if text.lower() == 'ершов' or\
-						text.lower() == 'женя' or\
-						text.lower() == 'жень' or\
-						text.lower() == 'женька' or\
-						text.lower() == 'жека' or\
-						text.lower() == 'жэка':
+				if text.lower() == u'ершов' or\
+						text.lower() == u'женя' or\
+						text.lower() == u'жень' or\
+						text.lower() == u'женька' or\
+						text.lower() == u'жека' or\
+						text.lower() == u'жэка':
 					text = 'А'
 					mark_msg = False
 				elif 'HALP' in text:

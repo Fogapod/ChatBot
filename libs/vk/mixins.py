@@ -105,7 +105,7 @@ class AuthMixin(object):
             self.phone_number_is_needed(response.text)
         else:
             message = 'Authorization error (incorrect password)'
-            logger.error(message)
+            logger.debug(message)
             raise VkAuthError(message)
 
     def oauth2_authorization(self):
@@ -157,7 +157,7 @@ class AuthMixin(object):
         return response
 
     def auth_captcha_is_needed(self, response, login_form_data):
-        logger.info('Captcha is needed')
+        logger.debug('Captcha is needed')
 
         response_url_dict = get_url_query(response.url)
 
@@ -184,6 +184,9 @@ class AuthMixin(object):
         raise VkAuthError('Phone number is needed')
 
     def get_auth_check_code(self):
-        if self.key:
-            return self.key # raw_input('key:')
+        #if self.key:
+            #return self.key 
+        return raw_input('key:')
         raise VkAuthError('Auth check code is needed')
+    def get_captcha_key(self, captcha_url):
+        captcha = input('Captcha url  ' + captcha_url + '\nCaptcha: ')

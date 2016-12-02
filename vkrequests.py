@@ -125,6 +125,7 @@ def send_message(**kwargs):
         forward_messages=forward,
         chat_id=gid,random_id=rnd_id
     )
+
     return response
 
 

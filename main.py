@@ -7,6 +7,8 @@ import time
 import json
 import re
 
+__version__ = '0.1.0'
+__author__ = 'Eugene Ershov http://vk.com/fogapod'
 # qpy
 import sys
 reload(sys)
@@ -14,22 +16,16 @@ sys.setdefaultencoding('utf-8')
 import logging
 logging.captureWarnings(True)
 
-#print(vkr.get_user_id(link=input('Короткая ссылка на страницу друга: ')))
-def animate_loading(text, delay):
-	loading_symbols = ('|', '/', '-', '\\')
-	for i, symbol in enumerate(loading_symbols):
-		print('#{} {}\r'.format(text, symbol)),
-		time.sleep(delay/len(loading_symbols))
-
 def main():
 	client = vkl.Client()
 	
 	client.authorize()
-	client.save_full_message_history()
+	#client.save_full_message_history()
 
 	url = client.make_url()
 
 	last_rnd_id = 1
+	print('-'*5 + 'Listening long poll' + '-'*5)
 	while True:
 		response = requests.post(url)
 		response = json.loads(response.content)
@@ -50,21 +46,28 @@ def main():
 					mark_msg = False
 				elif 'HALP' in text:
 					text = 'Кому нужна помощь?!'
-				elif re.sub('^( )*', '', text).startswith('/'):
+				elif re.sub('^( )*', '', text).startswith(u'/'):
 					text = text[1:]
-					if text.startswith('/'):
+					if text.startswith(u'/'):
 						text = text[1:]
 						mark_msg = False
 					words = text.split()
-					if not words: 
+					if not text: 
 						words = ' '
 					if re.match(u'^((help)|(помощь))', words[0].lower()):
 						text =\
-'''Версия: 0.1
+'''Версия: {ver}
 Я умею:
-	Говорить то, что вы попросите (/say text|/скажи текст)
-	Вызывать помощь (/help|/помощь)
-Получить ответ без кавычки' в конце: используйте //'''
+*Говорить то, что вы попросите
+(/say text|/скажи текст)
+*Вызывать помощь
+(/help|/помощь)
+Получить ответ без кавычки' в конце: используйте //
+
+Автор: {author}'''.format(\
+ver = __version__,
+author = __author__
+)
 
 					elif re.match(u'^((скажи)|(say))', words[0].lower()):
 						del words[0]
@@ -76,7 +79,7 @@ def main():
 
 				client.reply(
 					uid = update[3],
-					text = text + "'" if mark_mag else text,
+					text = text + "'" if mark_msg else text,
 					rnd_id = update[7] + 1
 				)
 				last_rnd_id = update[7] + 1

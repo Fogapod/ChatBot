@@ -89,6 +89,9 @@ def main():
 					if not words: 
 						words = ' '
 
+					if re.match(u'^((help)|(помощь))', words[0].lower()):
+						text = __info__
+
 					if words[0].startswith('/'):
 						words[0] = words[0][1:]
 						mark_msg = False
@@ -104,12 +107,12 @@ def main():
 				else:
 					continue
 
+				last_rnd_id = update + 1
 				client.reply(
 					uid = update[3],
 					text = text + "'" if mark_msg else text,
-					rnd_id = update[7] + 1
+					rnd_id = last_rnd_id
 				)
-				last_rnd_id = update[7] + 1
 
 if __name__ == '__main__':
 	main()

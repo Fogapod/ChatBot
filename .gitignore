@@ -11,4 +11,4 @@ data/message_dump.txt
 data/token.txt
 
 #qpy
-.last_tmp.py
+*.last_tmp.py

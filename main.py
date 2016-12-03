@@ -96,7 +96,8 @@ def main():
 						words[0] = words[0][1:]
 						mark_msg = False
 
-					if re.match('^((help)|(помощь))', words[0].lower()):
+					if re.match('^((help)|(помощь)|(info)|(инфо)|(информация)|\?)',\
+							words[0].lower()):
 						text = __info__
 					elif re.match('^((скажи)|(say))', words[0].lower()):
 						del words[0]

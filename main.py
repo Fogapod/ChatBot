@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import vklogic as vkl
 
+from NN2.chatbot import chatbot
 from io import BytesIO
 import random
 import pycurl
@@ -30,6 +31,9 @@ def animate_loading(text, delay):
 		time.sleep(delay/len(loading_symbols))
 
 def main():
+	cb = chatbot.Chatbot()
+	cb.main(('--test', 'daemon'))
+	#cb.main()
 	client = vkl.Client()
 	
 	while not client.authorization():
@@ -103,7 +107,7 @@ def main():
 						del words[0]
 						text = ' '.join(words)
 					else:
-						text = 'Попка молодец🐔' if random.randint(0,1) else 'Попка дурак🐔'
+						text = cb.daemonPredict(text) #'Попка молодец🐔' if random.randint(0,1) else 'Попка дурак🐔'
 
 				else:
 					continue

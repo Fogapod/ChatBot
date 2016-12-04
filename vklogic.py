@@ -115,7 +115,7 @@ class Client:
 					)
 					time.sleep(0.33)
 				file.write('### {}::{}\n\n'.format(uname, msg_list['message']['user_id']))
-				print('Завершена обработка диалога №{}'.format((k)*200 + d+1))
+				print('Завершена обработка диалога №{}/{}'.format(k*200+d+1, messages_list['count']))
 			messages_list = vkr.get_messages_list(offset=(k+1)*200)
 
 	def reply(self, **kwargs):

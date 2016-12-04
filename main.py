@@ -35,13 +35,14 @@ def main():
 	while not client.authorization():
 		continue
 
-	#client.save_full_message_history()
+	client.save_full_message_history()
 
 	url = client.make_url()
 	c = pycurl.Curl()
 	m = pycurl.CurlMulti()
 
 	last_rnd_id = 1
+	reply_count = 0
 	while True:
 		s = BytesIO()
 		c.setopt(c.URL, url)
@@ -54,7 +55,9 @@ def main():
 				break
 
 		while num_handles: # main loop
-			animate_loading('Listening long poll...', 1)
+			animate_loading(
+				'Listening long poll... {} replyes'.format(reply_count), 1
+				)
 			while 1: # main loop (2)
 				ret, num_handles = m.perform()
 				if ret != pycurl.E_CALL_MULTI_PERFORM:
@@ -89,9 +92,6 @@ def main():
 					if not words: 
 						words = ' '
 
-					if re.match('^((help)|(помощь))', words[0].lower()):
-						text = __info__
-
 					if words[0].startswith('/'):
 						words[0] = words[0][1:]
 						mark_msg = False
@@ -108,12 +108,13 @@ def main():
 				else:
 					continue
 
-				last_rnd_id = update + 1
+				last_rnd_id = update[7] + 1
 				client.reply(
 					uid = update[3],
 					text = text + "'" if mark_msg else text,
 					rnd_id = last_rnd_id
 				)
+				reply_count += 1
 
 if __name__ == '__main__':
 	main()

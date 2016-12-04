@@ -112,7 +112,7 @@ class Client:
 
 					print('Iteration {}.{}'.format(i+1, len(messages['items'])))
 					messages = vkr.get_messages(
-						offset=(i+1)*200, id=msg_list['user_id']
+						offset=(i+1)*200, uid=msg_list['message']['user_id']
 					)
 					time.sleep(0.33)
 				file.write('### {}::{}\n\n'.format(uname, msg_list['user_id']))

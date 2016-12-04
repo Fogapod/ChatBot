@@ -22,9 +22,9 @@ def vk_request_errors(request):
             elif 'incorrect password' in error:
                 print('Incorrect password!')
 
-            elif 'Read timed out' in error:
+            elif 'Read timed out' in error or 'Connection aborted' in error:
                 print('WARNING\nResponse time exceeded!')
-                time.sleep(0.33)
+                time.sleep(0.66)
                 return request_errors(*args, **kwargs)
 
             elif 'Captcha' in error:
@@ -39,6 +39,7 @@ def vk_request_errors(request):
 
             else:
                 print('\nERROR! ' + error + '\n')
+                raise
             return False
         else:
             return response
@@ -148,7 +149,7 @@ def get_messages(**kwargs):
     """
     count = '200'
     offset = str(kwargs.get('offset', '0'))
-    friend_id = kwargs['id']
+    friend_id = kwargs['uid']
 
     response = api.messages.getHistory(
         count=count, offset=offset,
@@ -159,10 +160,15 @@ def get_messages(**kwargs):
 
 @vk_request_errors
 def get_user_name(**kwargs):
-    uid = kwargs['uid']
+    uid = str(kwargs['uid'])
 
-    response = api.users.get(user_ids=uid)
-    return response[0]['first_name'] + ' ' + response[0]['last_name']
+    if int(uid) < 0: # группа
+        response = api.groups.getById(group_id=uid[1:])
+        name = response[0]['name']
+    else:
+        response = api.users.get(user_ids=uid)
+        name = response[0]['first_name'] + ' ' + response[0]['last_name']
+    return name
 
 
 @vk_request_errors

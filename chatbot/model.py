@@ -21,7 +21,7 @@ Model to predict the next sentence given an input sequence
 
 import tensorflow as tf
 
-from NN2.chatbot.textdata import Batch
+from chatbot.textdata import Batch
 
 
 class ProjectionOp:

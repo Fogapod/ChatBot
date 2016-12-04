@@ -25,7 +25,7 @@ import math  # For float comparison
 import os  # Checking file existance
 import random
 
-from NN2.chatbot.cornelldata import CornellData
+from chatbot.cornelldata import CornellData
 
 
 class Batch:
@@ -52,8 +52,8 @@ class TextData:
         self.args = args
 
         # Path variables
-        self.corpusDir = os.path.join(self.args.rootDir, 'NN2/data/cornell/')
-        self.samplesDir = os.path.join(self.args.rootDir, 'NN2/data/samples/')
+        self.corpusDir = os.path.join(self.args.rootDir, 'data/cornell/')
+        self.samplesDir = os.path.join(self.args.rootDir, 'data/samples/')
         self.samplesName = self._constructName()
 
         self.padToken = -1  # Padding

@@ -26,8 +26,8 @@ import os  # Files management
 from tqdm import tqdm  # Progress bar
 import tensorflow as tf
 
-from NN2.chatbot.textdata import TextData
-from NN2.chatbot.model import Model
+from chatbot.textdata import TextData
+from chatbot.model import Model
 
 
 class Chatbot:
@@ -62,12 +62,12 @@ class Chatbot:
         self.sess = None
 
         # Filename and directories constants
-        self.MODEL_DIR_BASE = 'NN2/save/model'
+        self.MODEL_DIR_BASE = 'save/model'
         self.MODEL_NAME_BASE = 'model'
         self.MODEL_EXT = '.ckpt'
         self.CONFIG_FILENAME = 'params.ini'
         self.CONFIG_VERSION = '0.3'
-        self.TEST_IN_NAME = 'NN2/data/test/samples.txt'
+        self.TEST_IN_NAME = 'data/test/samples.txt'
         self.TEST_OUT_SUFFIX = '_predictions.txt'
         self.SENTENCES_PREFIX = ['Q: ', 'A: ']
         self.i = 0
@@ -348,29 +348,6 @@ class Chatbot:
         Return:
             str: the human readable sentence
         """
-        '''if self.i == 0:
-            self.args = self.parseArgs(('--test', 'daemon'))
-
-            #self.loadModelParams()
-            if not self.args.rootDir:
-                self.args.rootDir = os.getcwd()  # Use the current working directory
-
-            self.args.maxLengthEnco = self.args.maxLength
-            self.args.maxLengthDeco = self.args.maxLength + 2
-
-            self.textData = TextData(self.args)
-
-            self.sess = tf.Session()
-
-            with tf.device(self.getDevice()):
-                self.model = Model(self.args, self.textData)
-
-            self.sess.run(tf.initialize_all_variables())
-
-            self.managePreviousModel(self.sess)
-
-            self.i =1'''
-
         return self.textData.sequence2str(
             self.singlePredict(sentence),
             clean=True

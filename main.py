@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import vklogic as vkl
 
-from NN2.chatbot import chatbot
+from chatbot import chatbot
 from io import BytesIO
 import random
 import pycurl
@@ -9,16 +9,21 @@ import time
 import json
 import re
 
-__version__ = '0.1.0'
+__version__ = '0.0.2'
 __author__ = 'Eugene Ershov - http://vk.com/fogapod'
 
 __info__ = '''
 Версия: {ver}
+
 Я умею:
 *Говорить то, что вы попросите
-(/say text|/скажи текст)
+(/say ... |/скажи ... )
 *Вызывать помощь
-(/help|/помощь)
+(/help |/помощь )
+*Вести диалог
+(/... )
+
+В конце моих сообщений ставится знак верхней кавычки'
 
 Автор: {author}'''.format(\
 	ver = __version__, author = __author__
@@ -39,7 +44,8 @@ def main():
 	while not client.authorization():
 		continue
 
-	client.save_full_message_history()
+	#client.save_full_message_history()
+	print(__info__)
 
 	url = client.make_url()
 	c = pycurl.Curl()
@@ -60,8 +66,11 @@ def main():
 
 		while num_handles: # main loop
 			animate_loading(
-				'Listening long poll... {} replyes'.format(reply_count), 1
-				)
+				'Listening long poll... {} {ans}'.format(
+					reply_count,
+					ans = 'answer' if reply_count == 1 else 'answers'
+				), 1
+			)
 			while 1: # main loop (2)
 				ret, num_handles = m.perform()
 				if ret != pycurl.E_CALL_MULTI_PERFORM:
@@ -107,7 +116,7 @@ def main():
 						del words[0]
 						text = ' '.join(words)
 					else:
-						text = cb.daemonPredict(text) #'Попка молодец🐔' if random.randint(0,1) else 'Попка дурак🐔'
+						text = cb.daemonPredict(text)
 
 				else:
 					continue

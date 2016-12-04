@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 import vkrequests as vkr
+from utils import parse_input
 
 import os
+import time
 
 class Profiler():
 	def __enter__(self):
@@ -24,6 +26,7 @@ class Client:
 
 		if token:
 			if vkr.log_in(token=token):
+				self.SELF_ID = vkr.get_user_id()
 				return True
 			else:
 				return False
@@ -37,14 +40,11 @@ class Client:
 						new_token, 'НИКОМУ НЕ ПОКАЗЫВАЙТЕ СОДЕРЖИМОЕ ЭТОГО ФАЙЛА'
 						)
 					)
-				print('3')
+				self.SELF_ID = vkr.get_user_id()
 				return True
 			else:
-				print('4')
 				return False
 
-
-		self.SELF_ID = vkr.get_user_id()
 
 	def get_login_and_password(self):
 		login = input('Логин: ')
@@ -60,7 +60,7 @@ class Client:
 						f.seek(0)
 						f.truncate()
 						with Profiler():
-							client.message_getter(f)
+							self.message_getter(f)
 						break
 				elif ans.lower() == 'n':
 					break
@@ -79,33 +79,32 @@ class Client:
 			for d in range(len(messages_list['items'])):
 				msg_list = messages_list['items'][d]
 				messages = vkr.get_messages(
-					id=msg_list['user_id']
-					)
+					uid=msg_list['message']['user_id']
+				)
 				time.sleep(0.33)
 
-				if 'chat_id' in msg_list:
+				if 'chat_id' in msg_list['message']:
 					print('Сообщения из беседы, пропускаю')
 					continue
 				else:
 					uname = vkr.get_user_name(
-								uid=msg_list['user_id']
+								uid=msg_list['message']['user_id']
 								)
 					print('Сообщений в диалоге: {}::{}'.format(\
 							messages['count'], uname
 								)
 							)
-					file.write('### {}::{}\n'.format(uname, msg_list['user_id']))
+					file.write('### {}::{}\n'.format(uname, msg_list['message']['user_id']))
 
 				for i in range(messages['count']//200 + 1):
 					for j in range(len(messages['items'])):
 						msg = messages['items'][j]
 						text = msg['body']
 						if text is not '':
-							text = re.sub(r'(https?://)?(?:m\.)?(v)(k)\.com/(?:.*)', '__vkurl__', text.lower())
-							text = re.sub(r'''(?i)\b((?:[a-z][\w-]+:(?:/{1,3}|[a-z0-9%])|www\d{0,3}[.]|[a-z0-9.\-]+[.][a-z]{2,4}/)(?:[^\s()<>]+|(([^\s()<>]+|(([^\s()<>]+)))*))+(?:(([^\s()<>]+|(([^\s()<>]+)))*)|[^\s`!()[]{};:'".,<>?«»“”‘’]))''', '__url__', text)
+							text = parse_input(text) 
 							file.write(
 							'{} {}\n'.format(\
-								':You:' if msg['from_id'] == self.SELF_ID else ':Friend:',
+								'<Q>' if msg['from_id'] == self.SELF_ID else '<A>',
 								text
 								)
 							)	
@@ -115,7 +114,7 @@ class Client:
 						offset=(i+1)*200, uid=msg_list['message']['user_id']
 					)
 					time.sleep(0.33)
-				file.write('### {}::{}\n\n'.format(uname, msg_list['user_id']))
+				file.write('### {}::{}\n\n'.format(uname, msg_list['message']['user_id']))
 				print('Завершена обработка диалога №{}'.format((k)*200 + d+1))
 			messages_list = vkr.get_messages_list(offset=(k+1)*200)
 

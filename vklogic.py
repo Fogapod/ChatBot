@@ -110,7 +110,7 @@ class Client:
 							text = parse_input(text) 
 							file.write(
 							'{} {}\n'.format(\
-								'<Q>' if msg['from_id'] == self.SELF_ID else '<A>',
+								'<A>' if msg['from_id'] == self.SELF_ID else '<Q>',
 								text
 								)
 							)	

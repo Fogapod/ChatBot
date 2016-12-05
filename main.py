@@ -2,19 +2,34 @@
 import vklogic as vkl
 
 from chatbot import chatbot
+from utils import parse_input
+
 from io import BytesIO
+import configparser
 import random
 import pycurl
 import time
 import json
 import re
+import os
+
+config = configparser.ConfigParser()
+rootDir = os.getcwd()
+modelDir = os.path.join(rootDir, 'save/model')
+configName = os.path.join(modelDir, 'params.ini')
+config.read(configName)
 
 __version__ = '0.0.2'
 __author__ = 'Eugene Ershov - http://vk.com/fogapod'
 __source__ = 'https://github.com/Fogapod/ChatBot/'
+try:
+	__rang__ = config['General'].getint('globStep')
+except:
+	__rang__ = False
 
 __info__ = '''
 Версия: {ver}
+Шагов обучения: {rang}
 
 Я умею:
 *Говорить то, что вы попросите
@@ -29,7 +44,7 @@ __info__ = '''
 Автор: {author}
 Мой исходный код: {source}
 '''.format(\
-	ver = __version__, author = __author__, source = __source__
+	ver=__version__, author=__author__, rang=__rang__, source=__source__
 )
 
 def animate_loading(text, delay):

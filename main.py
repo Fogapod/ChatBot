@@ -9,10 +9,26 @@ import re
 
 __version__ = '0.1.0'
 __author__ = 'Eugene Ershov http://vk.com/fogapod'
+
+__info__ =\
+'''
+Версия: {ver}
+Я умею:
+*Говорить то, что вы попросите
+(/say text|/скажи текст)
+*Вызывать помощь
+(/help|/помощь)
+Получить ответ без кавычки' в конце: используйте //
+
+Автор: {author}'''.format(\
+ver = __version__,
+author = __author__
+)
+
 # qpy
 import sys
 reload(sys)
-sys.setdefaultencoding('utf-8')
+#sys.setdefaultencoding('utf-8')
 import logging
 logging.captureWarnings(True)
 
@@ -25,7 +41,8 @@ def main():
 	url = client.make_url()
 
 	last_rnd_id = 1
-	print('-'*5 + 'Listening long poll' + '-'*5)
+	print(__info__)
+	print('\n{dec}{txt}{dec}'.format(dec='-'*5, txt='Listening long poll'))
 	while True:
 		response = requests.post(url)
 		response = json.loads(response.content)
@@ -54,21 +71,9 @@ def main():
 					words = text.split()
 					if not text: 
 						words = ' '
-					if re.match(u'^((help)|(помощь))', words[0].lower()):
-						text =\
-'''Версия: {ver}
-Я умею:
-*Говорить то, что вы попросите
-(/say text|/скажи текст)
-*Вызывать помощь
-(/help|/помощь)
-Получить ответ без кавычки' в конце: используйте //
-
-Автор: {author}'''.format(\
-ver = __version__,
-author = __author__
-)
-
+					if re.match(u'^((help)|(помощь)|(info)|(информация)|(инфо)|\?)',\
+						words[0].lower()):
+						text = __info__
 					elif re.match(u'^((скажи)|(say))', words[0].lower()):
 						del words[0]
 						text = ' '.join(words)

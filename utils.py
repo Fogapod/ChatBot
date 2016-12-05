@@ -16,3 +16,27 @@ def parse_input(string, replace_vkurl=True, replace_url=True, replace_nl=True):
 		new_string
 	)
 
+	if replace_nl:
+		new_string = re.sub('\n', ' __nl__ ', new_string) # поиск переносов на новую строку
+
+	return new_string
+
+def parse_chat_dump(path):
+	new_lines = []
+	last_line = '<A> '
+	print('Parsing chat history, do not close the program...')
+	with open(path, 'r+') as file:
+		lines = file.readlines()
+		for line in lines:
+			if line.startswith('###') or line == '' or line == '\n':
+				continue
+			elif line[:4] == last_line[:4]:
+				continue
+			else:
+				new_lines.append(line[4:])
+				last_line = line
+
+		file.seek(0)
+		file.truncate()
+		for line in new_lines:
+			file.write(line)

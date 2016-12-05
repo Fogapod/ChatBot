@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
-from libs import vkrequests as vkr
+import vkrequests as vkr
 from utils import parse_input
-
+from utils import parse_chat_dump
 import os
 import time
 
@@ -56,19 +56,25 @@ class Client:
 			while True:
 				ans = input('Файл с историей сообщений уже существует. Заменить его? (y/n) ')
 				if ans.lower() == 'y' or ans == '':
-					with open('data/message_dump.txt', 'a+') as f:
-						f.seek(0)
-						f.truncate()
-						with Profiler():
+					with Profiler():
+						with open('data/message_dump.txt', 'a+') as f:
+							f.seek(0)
+							f.truncate()
 							self.message_getter(f)
+						parse_chat_dump('data/message_dump.txt')
 						break
 				elif ans.lower() == 'n':
 					break
 				else:
 					print('Неизвестный ответ.')
 		else:
-			with open('data/message_dump.txt', 'a+') as f:
-				client.message_getter(f)
+			with Profiler():
+				with open('data/message_dump.txt', 'a+') as f:
+					f.seek(0)
+					f.truncate()
+					self.message_getter(f)
+				parse_chat_dump('data/message_dump.txt')
+
 
 	def message_getter(self, file):
 		#TODO: распознование стикеров

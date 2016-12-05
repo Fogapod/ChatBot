@@ -129,8 +129,6 @@ class Chatbot:
         """
         Launch the training and/or the interactive mode
         """
-        print('Welcome to DeepQA v0.1 !')
-        print()
         print('TensorFlow detected: v{}'.format(tf.__version__))
 
         # General initialisation

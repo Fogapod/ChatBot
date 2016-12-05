@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-import vkrequests as vkr
+from libs import vkrequests as vkr
 from utils import parse_input
 
 import os

@@ -11,6 +11,7 @@ import re
 
 __version__ = '0.0.2'
 __author__ = 'Eugene Ershov - http://vk.com/fogapod'
+__source__ = 'https://github.com/Fogapod/ChatBot/'
 
 __info__ = '''
 Версия: {ver}
@@ -25,8 +26,10 @@ __info__ = '''
 
 В конце моих сообщений ставится знак верхней кавычки'
 
-Автор: {author}'''.format(\
-	ver = __version__, author = __author__
+Автор: {author}
+Мой исходный код: {source}
+'''.format(\
+	ver = __version__, author = __author__, source = __source__
 )
 
 def animate_loading(text, delay):

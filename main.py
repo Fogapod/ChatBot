@@ -54,15 +54,16 @@ def animate_loading(text, delay):
 		time.sleep(delay/len(loading_symbols))
 
 def main():
-	cb = chatbot.Chatbot()
-	cb.main(('--test', 'daemon'))
-	#cb.main()
 	client = vkl.Client()
 	
 	while not client.authorization():
 		continue
 
-	#client.save_full_message_history()
+	client.save_full_message_history()
+
+	cb = chatbot.Chatbot()
+	cb.main()
+
 	print(__info__)
 
 	url = client.make_url()
@@ -117,15 +118,17 @@ def main():
 				elif 'HALP' in text:
 					text = 'Кому нужна помощь?!'
 
-				elif re.sub('^( )*', '', text).startswith('/'):
-					text = text[1:]
+				elif re.sub('^( )*', '', text).startswith('/'):	
+
+					if text.startswith('/'):
+						mark_msg = False
+						text = text[1:]
+
+					text = parse_input(text, replace_vkurl=False, replace_nl=False)
 					words = text.split()
+
 					if not words: 
 						words = ' '
-
-					if words[0].startswith('/'):
-						words[0] = words[0][1:]
-						mark_msg = False
 
 					if re.match('^((help)|(помощь)|(info)|(инфо)|(информация)|\?)',\
 							words[0].lower()):

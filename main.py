@@ -26,7 +26,8 @@ __info__ = '''
 В конце моих сообщений ставится знак верхней кавычки'
 
 Автор: {author}
-Мой код: {source}'''.format(\
+Мой исходный код: {source}
+'''.format(\
 	ver = __version__, author = __author__, source = __source__
 )
 

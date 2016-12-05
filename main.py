@@ -12,7 +12,7 @@ __author__ = 'Eugene Ershov - http://vk.com/fogapod'
 
 __info__ = '''
 Версия: {ver}-demo
-(эта версия может только выполнять команды)
+(demo версия не мржет вестм диалог)
 
 Я умею:
 *Говорить то, что вы попросите
@@ -41,9 +41,9 @@ def main():
 	#client.save_full_message_history()
 	
 	last_rnd_id = 0
-	url = client.make_url()
+	url = client.make_url() # url for long polling
 	print(__info__)
-	print('\n{dec}{txt}{dec}'.format(dec='-'*5, txt='Listening long poll'))
+	print('\n{decor}{txt}{decor}'.format(decor='-'*5, txt='Listening long poll'))
 	while True:
 		response = requests.post(url)
 		response = json.loads(response.content)

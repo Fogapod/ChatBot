@@ -15,8 +15,8 @@ class Profiler():
 
 class Client:
 	def __init__(self):
-		self.SELF_ID = None
-		self.lpd = None
+		self.SELF_ID = None # user_id ( vk.com/... )
+		self.lpd = None # LongPollData
 
 	def authorization(self):
 		try:
@@ -73,9 +73,10 @@ class Client:
 
 	def _message_getter(self, file):
 		#TODO: распознование стикеров
+		# main loop
 		messages_list = vkr.get_messages_list()
 		print('Обнаружено {} диалогов'.format(messages_list['count']))
-		for k in range(messages_list['count']//200 + 1):
+		for k in range(messages_list['count']//200 + 1): # vk can only provide 200 items per request
 
 			for d in range(len(messages_list['items'])):
 				msg_list = messages_list['items'][d]
@@ -97,7 +98,7 @@ class Client:
 							)
 					file.write('### {}::{}\n'.format(uname, msg_list['message']['user_id']))
 
-				for i in range(messages['count']//200 + 1):
+				for i in range(messages['count']//200 + 1): # vk can only provide 200 items per request
 					for j in range(len(messages['items'])):
 						msg = messages['items'][j]
 						text = msg['body']
@@ -127,6 +128,7 @@ class Client:
 		)
 
 	def make_url(self, keep_ts=False):
+		# long poll request url
 		if keep_ts:
 			self.lpd['ts'] = keep_ts
 		else: 

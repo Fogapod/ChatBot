@@ -9,7 +9,8 @@ import re
 
 __version__ = '0.0.2'
 __author__ = 'Eugene Ershov - http://vk.com/fogapod'
-
+__source__ = 'https://github.com/Fogapod/ChatBot/'
+	
 __info__ = '''
 Версия: {ver}-demo
 (demo версия не может вестм диалог)
@@ -24,8 +25,9 @@ __info__ = '''
 
 В конце моих сообщений ставится знак верхней кавычки'
 
-Автор: {author}'''.format(\
-	ver = __version__, author = __author__
+Автор: {author}
+Мой код: {source}'''.format(\
+	ver = __version__, author = __author__, source = __source__
 )
 
 # qpy
@@ -38,7 +40,7 @@ def main():
 	while not client.authorization():
 		continue
 
-	#client.save_full_message_history()
+	client.save_full_message_history()
 	
 	last_rnd_id = 0
 	url = client.make_url() # url for long polling
@@ -73,7 +75,6 @@ def main():
 					text = text[1:]
 					if text.startswith(u'/'):
 						text = text[1:]
-						mark_msg = False
 					words = text.split()
 					if not text: 
 						words = ' '

@@ -49,9 +49,14 @@ def main():
 		response = json.loads(response.content)
 		print(response)
 		url = client.make_url(keep_ts=response['ts'])
-
+   
 		for update in response['updates']:
-			if update[0] is 4 and update[7] != last_rnd_id and update[3]:
+			if update[0] == 4 and\
+					update[7] != last_rnd_id and\
+					update[6] != '':
+			# response == message
+			# message != last_message
+			# message != ''
 				text = update[6]
 				mark_msg = True
 				if text.lower() == u'ершов' or\

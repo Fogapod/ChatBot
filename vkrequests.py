@@ -82,9 +82,9 @@ def log_in(**kwargs):
     global api
     try:
         api = vk.API(session, v='5.60')
-        track_visitor()
     except UnboundLocalError: # session was not created
         raise Exception('Failed receiving session!')
+    track_visitor()
 
     return session.access_token
 

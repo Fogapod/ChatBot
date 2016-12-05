@@ -7,40 +7,41 @@ import time
 import json
 import re
 
-__version__ = '0.1.0'
-__author__ = 'Eugene Ershov http://vk.com/fogapod'
+__version__ = '0.0.2'
+__author__ = 'Eugene Ershov - http://vk.com/fogapod'
 
-__info__ =\
-'''
-Версия: {ver}
+__info__ = '''
+Версия: {ver}-demo
+(эта версия может только выполнять команды)
+
 Я умею:
 *Говорить то, что вы попросите
-(/say text|/скажи текст)
+(/say ... |/скажи ... )
 *Вызывать помощь
-(/help|/помощь)
-Получить ответ без кавычки' в конце: используйте //
+(/help |/помощь )
+*Вести диалог
+(/... )
+
+В конце моих сообщений ставится знак верхней кавычки'
 
 Автор: {author}'''.format(\
-ver = __version__,
-author = __author__
+	ver = __version__, author = __author__
 )
 
 # qpy
-import sys
-reload(sys)
-#sys.setdefaultencoding('utf-8')
 import logging
 logging.captureWarnings(True)
 
 def main():
 	client = vkl.Client()
 	
-	client.authorize()
+	while not client.authorization():
+		continue
+
 	#client.save_full_message_history()
-
+	
+	last_rnd_id = 0
 	url = client.make_url()
-
-	last_rnd_id = 1
 	print(__info__)
 	print('\n{dec}{txt}{dec}'.format(dec='-'*5, txt='Listening long poll'))
 	while True:

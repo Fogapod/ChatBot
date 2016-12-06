@@ -3,6 +3,7 @@ import vkrequests as vkr
 from utils import parse_input
 
 import os
+import time
 
 p = '/storage/emulated/0/Git/ChatBot/'
 

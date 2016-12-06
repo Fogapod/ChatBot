@@ -7,7 +7,7 @@ import time
 import json
 import re
 
-__version__ = '0.0.2'
+__version__ = '0.0.3'
 __author__ = 'Eugene Ershov - http://vk.com/fogapod'
 __source__ = 'https://github.com/Fogapod/ChatBot/'
 	
@@ -34,6 +34,10 @@ __info__ = '''
 # qpy
 import logging
 logging.captureWarnings(True)
+import sys
+reload(sys)
+sys.setdefaultencoding('utf-8')
+# qpy
 
 def main():
 	client = vkl.Client()
@@ -45,8 +49,10 @@ def main():
 	
 	last_rnd_id = 0
 	url = client.make_url() # url for long polling
+
 	print(__info__)
 	print('{decor}{txt}{decor}'.format(decor='-'*5, txt='Listening long poll'))
+
 	while True:
 		response = requests.post(url)
 		response = json.loads(response.content)
@@ -70,23 +76,31 @@ def main():
 						text.lower() == u'жэка':
 					text = 'А'
 					mark_msg = False
+
 				elif 'HALP' in text:
 					text = 'Кому нужна помощь?!'
-				elif re.sub('^( )*', '', text).startswith(u'/'):
-					text = text[1:]
-					if text.startswith(u'/'):
+
+				elif re.sub('^( )*', '', text).startswith('/'):	
+
+					if text.startswith('/'):
+						mark_msg = False
 						text = text[1:]
+
+					text = parse_input(text, replace_vkurl=False, replace_nl=False)
 					words = text.split()
-					if not text: 
+
+					if not words: 
 						words = ' '
-					if re.match(u'^((help)|(помощь)|(info)|(информация)|(инфо)|\?)',\
-						words[0].lower()):
+
+					if re.match(u'^((help)|(помощь)|(info)|(инфо)|(информация)|\?)',\
+							words[0].lower()):
 						text = __info__
 					elif re.match(u'^((скажи)|(say))', words[0].lower()):
 						del words[0]
 						text = ' '.join(words)
 					else:
 						text = 'Попка молодец🐔' if random.randint(0,1) else 'Попка дурак🐔'
+
 				else:
 					continue
 

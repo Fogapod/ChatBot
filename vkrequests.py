@@ -16,7 +16,10 @@ def vk_request_errors(request):
                 time.sleep(0.33)
                 return request_errors(*args, **kwargs)
 
-            elif 'Failed to establish a new connection' in error:
+            elif 'Failed to establish a new connection' in error\
+                    or'Read timed out' in error\
+                    or 'Connection aborted' in error:
+
                 print('Check your connection!')
                 time.sleep(2)
                 return request_errors(*args, **kwargs)
@@ -24,14 +27,10 @@ def vk_request_errors(request):
             elif 'incorrect password' in error:
                 print('Incorrect password!')
 
-            elif 'Read timed out' in error or 'Connection aborted' in error:
-                print('WARNING\nResponse time exceeded!')
-                time.sleep(0.66)
-                return request_errors(*args, **kwargs)
-
             elif 'Captcha' in error:
                 print('Capthca!!!!!')
                 # raise #TODO обработать капчу
+
             elif 'Internal server error' in error:
                 print('Internal API error!')
                 time.sleep(0.66)

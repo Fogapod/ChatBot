@@ -58,26 +58,31 @@ class Client:
 			while True:
 				ans = raw_input('Файл с историей сообщений уже существует. Заменить его? (y/n) ')
 				if ans.lower() == 'y' or ans == '':
-					with open(p+'data/message_dump.txt', 'a+') as f:
-						f.seek(0)
-						f.truncate()
-						with Profiler():
-							self._message_getter(f)
+					with Profiler():
+						with open(p+'data/message_dump.txt', 'a+') as f:
+							f.seek(0)
+							f.truncate()
+							self.message_getter(f)
+						parse_chat_dump(p+'data/message_dump.txt')
 						break
 				elif ans.lower() == 'n':
 					break
 				else:
 					print('Неизвестный ответ.')
 		else:
-			with open(p+'data/message_dump.txt', 'a+') as f:
-				client.message_getter(f)
+			with Profiler():
+				with open(p+'data/message_dump.txt', 'a+') as f:
+					f.seek(0)
+					f.truncate()
+					self.message_getter(f)
+				parse_chat_dump(p+'data/message_dump.txt')
 
-	def _message_getter(self, file):
+
+	def message_getter(self, file):
 		#TODO: распознование стикеров
-		# main loop
 		messages_list = vkr.get_messages_list()
 		print('Обнаружено {} диалогов'.format(messages_list['count']))
-		for k in range(messages_list['count']//200 + 1): # vk can only provide 200 items per request
+		for k in range(messages_list['count']//200 + 1):
 
 			for d in range(len(messages_list['items'])):
 				msg_list = messages_list['items'][d]
@@ -99,7 +104,7 @@ class Client:
 							)
 					file.write('### {}::{}\n'.format(uname, msg_list['message']['user_id']))
 
-				for i in range(messages['count']//200 + 1): # vk can only provide 200 items per request
+				for i in range(messages['count']//200 + 1):
 					for j in range(len(messages['items'])):
 						msg = messages['items'][j]
 						text = msg['body']
@@ -107,7 +112,7 @@ class Client:
 							text = parse_input(text) 
 							file.write(
 							'{} {}\n'.format(\
-								'<Q>' if msg['from_id'] == self.SELF_ID else '<A>',
+								'<A>' if msg['from_id'] == self.SELF_ID else '<Q>',
 								text
 								)
 							)	

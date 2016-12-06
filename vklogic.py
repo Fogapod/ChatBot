@@ -108,7 +108,7 @@ class Client:
 					for j in range(len(messages['items'])):
 						msg = messages['items'][j]
 						text = msg['body']
-						if text is not '':
+						if text != '':
 							text = parse_input(text) 
 							file.write(
 							'{} {}\n'.format(\

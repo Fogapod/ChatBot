@@ -104,12 +104,13 @@ def main():
 				else:
 					continue
 
+				last_rnd_id = update[7] + 1
 				client.reply(
 					uid = update[3],
 					text = text + "'" if mark_msg else text,
-					rnd_id = update[7] + 1
+					rnd_id = last_rnd_id
 				)
-				last_rnd_id = update[7] + 1
+				reply_count += 1
 
 if __name__ == '__main__':
 	main()

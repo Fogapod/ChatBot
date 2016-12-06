@@ -19,7 +19,7 @@ modelDir = os.path.join(rootDir, 'save/model')
 configName = os.path.join(modelDir, 'params.ini')
 config.read(configName)
 
-__version__ = '0.0.2'
+__version__ = '0.0.3'
 __author__ = 'Eugene Ershov - http://vk.com/fogapod'
 __source__ = 'https://github.com/Fogapod/ChatBot/'
 try:

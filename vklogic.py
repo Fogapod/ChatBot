@@ -2,6 +2,7 @@
 import vkrequests as vkr
 from utils import parse_input
 from utils import parse_chat_dump
+
 import os
 import time
 
@@ -106,7 +107,7 @@ class Client:
 					for j in range(len(messages['items'])):
 						msg = messages['items'][j]
 						text = msg['body']
-						if text != '':
+						if text is not '':
 							text = parse_input(text) 
 							file.write(
 							'{} {}\n'.format(\

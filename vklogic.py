@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import vkrequests as vkr
 from utils import parse_input
+from utils import parse_chat_dump
 
 import os
 import time

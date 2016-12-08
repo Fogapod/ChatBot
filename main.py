@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+#qpy:2
 import vklogic as vkl
 
 import random
@@ -37,6 +38,7 @@ logging.captureWarnings(True)
 import sys
 reload(sys)
 sys.setdefaultencoding('utf-8')
+p = '/storage/emulated/0/'
 # qpy
 
 def main():

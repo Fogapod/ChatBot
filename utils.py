@@ -4,7 +4,7 @@ def parse_input(string, replace_vkurl=True, replace_url=True, replace_nl=True):
 	new_string = string
 
 	if replace_vkurl:
-		new_string = re.sub(r'(https?://)?m\.?vk\.com/?.*',
+		new_string = re.sub(r'\b(https?://)?m\.?vk\.com/?.*\b',
 			'__vkurl__',
 			new_string # поиск ссылок vk.com
 		)
@@ -27,29 +27,37 @@ def parse_chat_dump(path, new_path=None):
 	last_line = '<A> '
 	dialog_started = False
 	was_new_message = False
+
 	print('Parsing chat history, do not close the program...')
+
 	with open(path, 'r') as file:
 		lines = file.readlines()
+
 		for line in lines:
 			if line.startswith('###'):
 				dialog_started = not dialog_started
 				if dialog_started:
 				  last_line = '<A> '
+				  was_new_message = False
+				continue
+
 			elif line == '\n':
 				continue
+
 			elif line[:4] == last_line[:4]: # "<Q> " and "<A> "
 				new_lines.append(line[4:-1] + ' __nm__ ')
 				was_new_message = True
 				last_line = line
-			else:
-				if was_new_message:
-					new_line += '\n'
-					was_new_message = False
+				continue
 
-				new_line +=  line[4:]
-				new_lines.append(new_line)
-				last_line = line
-				new_line = ''
+			if was_new_message:
+				new_lines[len(new_lines)-1] = new_lines[len(new_lines)-1][:-len(' __nm__ ')] + '\n'
+				was_new_message = False
+
+			new_line +=  line[4:]
+			new_lines.append(new_line)
+			last_line = line
+			new_line = ''
 
 	with open('{}'.format(new_path if new_path else path), 'w') as new_file:
 		for line in new_lines:

@@ -64,7 +64,7 @@ class Client:
 							f.seek(0)
 							f.truncate()
 							self.message_getter(f)
-						parse_chat_dump(p+'data/message_dump.txt')
+						parse_chat_dump(p+'data/message_dump.txt', p+'data/message_dump.txt')
 						break
 				elif ans.lower() == 'n':
 					break
@@ -76,7 +76,7 @@ class Client:
 					f.seek(0)
 					f.truncate()
 					self.message_getter(f)
-				parse_chat_dump(p+'data/message_dump.txt')
+				parse_chat_dump(p+'data/message_dump.txt', p+'data/message_dump.txt')
 
 
 	def message_getter(self, file):

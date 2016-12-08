@@ -2,11 +2,12 @@
 import vkrequests as vkr
 from utils import parse_input
 from utils import parse_chat_dump
+from utils import get_sticker_meaning
 
 import os
 import time
 
-p = '/storage/emulated/0/Git/ChatBot/'
+p = '/storage/emulated/0/'
 
 class Profiler():
 	def __enter__(self):
@@ -22,7 +23,7 @@ class Client:
 
 	def authorization(self):
 		try:
-			with open(p+'data/token.txt', 'r') as token_file:
+			with open(p+'Git/ChatBot/data/token.txt', 'r') as token_file:
 				token = token_file.readlines()[0][:-1]
 		except IOError:
 			token = None
@@ -38,7 +39,7 @@ class Client:
 			login, password = self._get_login_and_password()
 			new_token = vkr.log_in(login=login, password=password)
 			if new_token:
-				with open(p+'data/token.txt', 'w') as token_file:
+				with open(p+'Git/ChatBot/data/token.txt', 'w') as token_file:
 					token_file.write('{}\n{}'.format(\
 						new_token, 'НИКОМУ НЕ ПОКАЗЫВАЙТЕ СОДЕРЖИМОЕ ЭТОГО ФАЙЛА'
 						)
@@ -55,16 +56,16 @@ class Client:
 		return login, password
 
 	def save_full_message_history(self):
-		if os.path.exists(p+'data/message_dump.txt'):
+		if os.path.exists(p+'Git/ChatBot/data/message_dump.txt'):
 			while True:
 				ans = raw_input('Файл с историей сообщений уже существует. Заменить его? (y/n) ')
 				if ans.lower() == 'y' or ans == '':
 					with Profiler():
-						with open(p+'data/message_dump.txt', 'a+') as f:
+						with open(p+'Git/ChatBot/data/message_dump.txt', 'a+') as f:
 							f.seek(0)
 							f.truncate()
 							self.message_getter(f)
-						parse_chat_dump(p+'data/message_dump.txt', p+'data/message_dump.txt')
+						parse_chat_dump(p+'Git/ChatBot/data/message_dump.txt', p+'Git/ChatBot/data/message_dump.txt')
 						break
 				elif ans.lower() == 'n':
 					break
@@ -72,11 +73,11 @@ class Client:
 					print('Неизвестный ответ.')
 		else:
 			with Profiler():
-				with open(p+'data/message_dump.txt', 'a+') as f:
+				with open(p+'Git/ChatBot/data/message_dump.txt', 'a+') as f:
 					f.seek(0)
 					f.truncate()
 					self.message_getter(f)
-				parse_chat_dump(p+'data/message_dump.txt', p+'data/message_dump.txt')
+				parse_chat_dump(p+'Git/ChatBot/data/message_dump.txt', p+'Git/ChatBot/data/message_dump.txt')
 
 
 	def message_getter(self, file):
@@ -116,8 +117,16 @@ class Client:
 								'<A>' if msg['from_id'] == self.SELF_ID else '<Q>',
 								text
 								)
-							)	
-
+							)
+						elif 'attachments' in msg and msg['attachments'][0]['type'] == 'sticker':
+						    text = get_sticker_meaning(msg['attachments'][0]['sticker'])
+						    file.write(
+						    '{} {}\n'.format(\
+							    '<A>' if msg['from_id'] == self.SELF_ID else '<Q>',
+							    text
+							    )
+						    )
+							
 					print('Iteration {}.{}'.format(i+1, len(messages['items'])))
 					messages = vkr.get_messages(
 						offset=(i+1)*200, uid=msg_list['message']['user_id']

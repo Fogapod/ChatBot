@@ -22,6 +22,7 @@ config.read(configName)
 __version__ = '0.0.3'
 __author__ = 'Eugene Ershov - http://vk.com/fogapod'
 __source__ = 'https://github.com/Fogapod/ChatBot/'
+
 try:
 	__rang__ = config['General'].getint('globStep')
 except:
@@ -112,20 +113,9 @@ def main():
 			# message != ''
 				text = update[6]
 				mark_msg = True
-				if text.lower() == 'ершов' or\
-						text.lower() == 'женя' or\
-						text.lower() == 'жень' or\
-						text.lower() == 'женька' or\
-						text.lower() == 'жека' or\
-						text.lower() == 'жэка':
-					text = 'А'
-					mark_msg = False
 
-				elif 'HALP' in text:
-					text = 'Кому нужна помощь?!'
-
-				elif re.sub('^( )*', '', text).startswith('/'):	
-
+				if re.sub('^( )*', '', text).startswith('/'):	
+					text = text[1:]
 					if text.startswith('/'):
 						mark_msg = False
 						text = text[1:]
@@ -143,7 +133,7 @@ def main():
 						del words[0]
 						text = ' '.join(words)
 					else:
-						text = cb.daemonPredict(text)
+						text = re.sub('(__nm__)|(__nl__)', '\n', cb.daemonPredict(text))
 
 				else:
 					continue

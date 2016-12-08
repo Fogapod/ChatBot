@@ -4,7 +4,7 @@ def parse_input(string, replace_vkurl=True, replace_url=True, replace_nl=True):
 	new_string = string
 
 	if replace_vkurl:
-		new_string = re.sub(r'(https?://)?m\.?vk\.com/?.*',
+		new_string = re.sub(r'\b(https?://)?m\.?vk\.com/?.*\b',
 			'__vkurl__',
 			new_string # поиск ссылок vk.com
 		)

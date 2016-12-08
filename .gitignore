@@ -8,6 +8,7 @@ build/
 *.spec
 
 data/message_dump.txt
+data/message_dump_raw.txt
 data/token.txt
 
 .last_tmp.py

@@ -165,6 +165,13 @@ def get_messages(**kwargs):
 
 
 @vk_request_errors
+def get_message_info(**kwargs):
+	mid = kwargs['message_id']
+	response =  api.messages.getById(message_ids=mid)
+	return response
+
+
+@vk_request_errors
 def get_user_name(**kwargs):
     uid = str(kwargs['uid'])
 

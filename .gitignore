@@ -7,5 +7,5 @@ build/
 *.manifest
 *.spec
 
-data/message_dump.txt
-data/token.txt
+data/
+save/

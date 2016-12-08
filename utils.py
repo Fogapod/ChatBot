@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 import re
+import json
+
 def parse_input(string, replace_vkurl=True, replace_url=True, replace_nl=True):
 	new_string = string
 
@@ -21,35 +23,77 @@ def parse_input(string, replace_vkurl=True, replace_url=True, replace_nl=True):
 
 	return new_string
 
+def get_sticker_meaning(new_sticker):
+	try:
+		with open('data/meanings_of_stiсkers.txt', 'r') as f:
+			text = re.sub("'", '"', f.read())
+			stickers = json.loads(text)
+	except FileNotFoundError:
+		with open('data/meanings_of_stiсkers.txt', 'w') as f:
+			pass
+		f = '{"product_id":{"0":{"id":{"0":{"photo_64":"0","meaning":"0"}}}}}'
+		stickers = json.loads(f)
+
+	if str(new_sticker['product_id']) not in stickers['product_id']:
+		stickers['product_id'].update({str(new_sticker['product_id']):{'id':{}}})
+
+	if str(new_sticker['id']) not in stickers['product_id'][str(new_sticker['product_id'])]['id']:
+		stickers['product_id'][str(new_sticker['product_id'])]['id'].update({str(new_sticker['id']):{'meaning':'__sticker__','photo_64':new_sticker['photo_64']}})
+
+	if stickers['product_id'][str(new_sticker['product_id'])]['id'][str(new_sticker['id'])]['meaning'] == '__sticker__':
+		print('Ссылка на стикер: {}'.format(new_sticker['photo_64']))
+		meaning = input('Попробуйте определить, что он значает короткой фразой: ')
+
+		if meaning == '':
+			meaning = '__sticker__'
+
+		stickers['product_id'][str(new_sticker['product_id'])]['id'][str(new_sticker['id'])]['meaning'] = meaning
+
+		with open('data/meanings_of_stiсkers.txt', 'w') as f:
+			f.write(str(stickers))
+
+		return '__sticker__ ' + meaning
+
+	else:
+		return stickers['product_id'][str(new_sticker['product_id'])]['id'][str(new_sticker['id'])]['meaning']
+
 def parse_chat_dump(path, new_path=None):
 	new_lines = []
 	new_line = ''
 	last_line = '<A> '
 	dialog_started = False
 	was_new_message = False
+
 	print('Parsing chat history, do not close the program...')
+
 	with open(path, 'r') as file:
 		lines = file.readlines()
+
 		for line in lines:
 			if line.startswith('###'):
 				dialog_started = not dialog_started
 				if dialog_started:
 				  last_line = '<A> '
+				  was_new_message = False
+				continue
+
 			elif line == '\n':
 				continue
+
 			elif line[:4] == last_line[:4]: # "<Q> " and "<A> "
 				new_lines.append(line[4:-1] + ' __nm__ ')
 				was_new_message = True
 				last_line = line
-			else:
-				if was_new_message:
-					new_line += '\n'
-					was_new_message = False
+				continue
 
-				new_line +=  line[4:]
-				new_lines.append(new_line)
-				last_line = line
-				new_line = ''
+			if was_new_message:
+				new_lines[len(new_lines)-1] = new_lines[len(new_lines)-1][:-len(' __nm__ ')] + '\n'
+				was_new_message = False
+
+			new_line +=  line[4:]
+			new_lines.append(new_line)
+			last_line = line
+			new_line = ''
 
 	with open('{}'.format(new_path if new_path else path), 'w') as new_file:
 		for line in new_lines:

@@ -2,6 +2,7 @@
 import vkrequests as vkr
 from utils import parse_input
 from utils import parse_chat_dump
+from utils import get_sticker_meaning
 
 import os
 import time
@@ -53,16 +54,16 @@ class Client:
 		return login, password
 
 	def save_full_message_history(self):
-		if os.path.exists('data/message_dump.txt'):
+		if os.path.exists('data/message_dump_raw.txt'):
 			while True:
 				ans = input('Файл с историей сообщений уже существует. Заменить его? (y/n) ')
 				if ans.lower() == 'y' or ans == '':
 					with Profiler():
-						with open('data/message_dump.txt', 'a+') as f:
+						with open('data/message_dump_raw.txt', 'a+') as f:
 							f.seek(0)
 							f.truncate()
 							self.message_getter(f)
-						parse_chat_dump('data/message_dump.txt')
+						parse_chat_dump('data/message_dump_raw.txt', 'data/message_dump.txt')
 						break
 				elif ans.lower() == 'n':
 					break
@@ -70,11 +71,11 @@ class Client:
 					print('Неизвестный ответ.')
 		else:
 			with Profiler():
-				with open('data/message_dump.txt', 'a+') as f:
+				with open('data/message_dump_raw.txt', 'a+') as f:
 					f.seek(0)
 					f.truncate()
 					self.message_getter(f)
-				parse_chat_dump('data/message_dump.txt')
+				parse_chat_dump('data/message_dump.txt', 'data/message_dump.txt')
 
 
 	def message_getter(self, file):
@@ -107,14 +108,22 @@ class Client:
 					for j in range(len(messages['items'])):
 						msg = messages['items'][j]
 						text = msg['body']
-						if text is not '':
+						if text != '':
 							text = parse_input(text) 
 							file.write(
 							'{} {}\n'.format(\
 								'<A>' if msg['from_id'] == self.SELF_ID else '<Q>',
 								text
 								)
-							)	
+							)
+						elif 'attachments' in msg and msg['attachments'][0]['type'] == 'sticker':
+							text = get_sticker_meaning(msg['attachments'][0]['sticker'])
+							file.write(
+							'{} {}\n'.format(\
+								'<A>' if msg['from_id'] == self.SELF_ID else '<Q>',
+								text
+								)
+							)
 
 					print('Iteration {}.{}'.format(i+1, len(messages['items'])))
 					messages = vkr.get_messages(

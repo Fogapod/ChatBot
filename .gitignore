@@ -6,11 +6,13 @@ env/
 build/
 *.manifest
 *.spec
+.last_tmp.py
 
 data/samples/
 data/cornell/
 data/message_dump.txt
 data/message_dump_raw.txt
 data/token.txt
+data/meaning_of_stickers.txt
 
 save/

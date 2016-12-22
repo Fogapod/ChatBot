@@ -1,10 +1,9 @@
 # -*- coding: utf-8 -*-
 import re
 import json
+import webbrowser
 
-#qpy
 p = '/storage/emulated/0/'
-#qpy
 
 def parse_input(string, replace_vkurl=True, replace_url=True, replace_nl=True):
 	new_string = string
@@ -28,28 +27,39 @@ def parse_input(string, replace_vkurl=True, replace_url=True, replace_nl=True):
 	return new_string
 
 def get_sticker_meaning(new_sticker):
-    try:
-        with open(p+'Git/ChatBot/data/meanings_of_stikers.txt', 'r') as f:
-            stickers = json.loads(f.read())
-    except IOError:
-        with open(p+'Git/ChatBot/data/meanings_of_stikers.txt', 'w') as f:
-            pass
-        f = "product_id':{'0':{'id':{'0':{'photo_64':'0','meaning:'0'}}}}"
-        stickers = json.loads(f)
-    if not new_sticker['product_id'] in stickers['product_id']:
-        stickers['product_id'] = new_sticker['product_id']
-    if not new_sticker['id'] in stickers['product_id']['id']:
-        print('Ссылка на стикер: {}'.format(new_sticker['photo_64']))
-        meaning = raw_input('Попробуйте определить, что он значает короткой фразой: ')
-        if meaning == '':
-            meaning = '__sticker__'
-        stickers[new_sticker['product_id']][new_sticker['id']]['meaning'] = meaning
-        stickers[new_sticker['product_id']][new_sticker['id']]['photo_64'] = new_sticker['photo_64']
-        with open(p+'Git/ChatBot/data/meanings_of_stikers', 'w') as f:
-            f.write(str(stickers))
-        return '__sticker__ ' + meaning
-    else:
-        return stickers[new_sticker['product_id']][new_sticker['id']]['meaning']
+	try:
+		with open(p+'Git/ChatBot/data/meanings_of_stiсkers.txt', 'r') as f:
+			text = re.sub("'", '"', f.read())
+			stickers = json.loads(text)
+	except IOError:
+		with open(p+'Git/ChatBot/data/meanings_of_stiсkers.txt', 'w') as f:
+			pass
+		f = '{"product_id":{"0":{"id":{"0":{"photo_64":"0","meaning":"0"}}}}}'
+		stickers = json.loads(f)
+
+	if str(new_sticker['product_id']) not in stickers['product_id']:
+		stickers['product_id'].update({str(new_sticker['product_id']):{'id':{}}})
+
+	if str(new_sticker['id']) not in stickers['product_id'][str(new_sticker['product_id'])]['id']:
+		stickers['product_id'][str(new_sticker['product_id'])]['id'].update({str(new_sticker['id']):{'meaning':'__sticker__','photo_64':new_sticker['photo_64']}})
+
+	if stickers['product_id'][str(new_sticker['product_id'])]['id'][str(new_sticker['id'])]['meaning'] == '__sticker__':
+		print('Ссылка на стикер: {}'.format(new_sticker['photo_64']))
+		webbrowser.open_new(new_sticker['photo_64'])
+		meaning = unicode(raw_input('Попробуйте определить, что он значает короткой фразой: '))
+
+		if meaning == '':
+			meaning = '__sticker__'
+
+		stickers['product_id'][str(new_sticker['product_id'])]['id'][str(new_sticker['id'])]['meaning'] = meaning
+
+		with open(p+'Git/ChatBot/data/meanings_of_stiсkers.txt', 'w') as f:
+			f.write(str(stickers))
+
+		return '__sticker__ ' + meaning
+
+	else:
+		return stickers['product_id'][str(new_sticker['product_id'])]['id'][str(new_sticker['id'])]['meaning']
 
 def parse_chat_dump(path, new_path=None):
 	new_lines = []

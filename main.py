@@ -2,13 +2,14 @@
 #qpy:2
 import vklogic as vkl
 
+from threading import Thread
 import random
 import requests
 import time
 import json
 import re
 
-__version__ = '0.0.3'
+__version__ = '0.0.4'
 __author__ = 'Eugene Ershov - http://vk.com/fogapod'
 __source__ = 'https://github.com/Fogapod/ChatBot/'
 	
@@ -41,25 +42,49 @@ sys.setdefaultencoding('utf-8')
 p = '/storage/emulated/0/'
 # qpy
 
-def main():
-	client = vkl.Client()
+client = vkl.Client()
 	
-	while not client.authorization():
-		continue
+while not client.authorization():
+	continue
 
-	client.save_full_message_history()
+client.save_full_message_history()
 	
-	last_rnd_id = 0
-	url = client.make_url() # url for long polling
+last_rnd_id = 0
+url = client.make_url() # url for long polling
+	
+long_poll_response = None
 
-	print(__info__)
-	print('{decor}{txt}{decor}'.format(decor='-'*5, txt='Listening long poll'))
+def listen_long_poll():
+	global long_poll_response
+	global url
+
+	print('{decor}{txt}{decor}'.format(decor='-'*6, txt='Listening long poll'))
 
 	while True:
-		response = requests.post(url)
-		response = json.loads(response.content)
-		print(response)
+		if not long_poll_response:
+			long_poll_response = requests.post(url)
+		else:
+			continue # прошлый запрос не обработан
+
+long_poll_process = Thread(target=listen_long_poll)
+
+def main():
+	print(__info__)
+
+	global long_poll_response
+	global url
+	
+	long_poll_process.start()
+
+	while True:
+		if not long_poll_response:
+			time.sleep(0.1)
+			continue
+
+		response = json.loads(long_poll_response.content)
 		url = client.make_url(keep_ts=response['ts'])
+		long_poll_response = None
+		print(response)
    
 		for update in response['updates']:
 			if update[0] == 4 and\

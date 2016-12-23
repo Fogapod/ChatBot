@@ -50,40 +50,42 @@ while not client.authorization():
 
 client.save_full_message_history()
 	
-url = client.make_url() # url for long polling
-	
+long_poll_url = client.make_url() 
 long_poll_response = None
 
 def listen_long_poll():
 	global long_poll_response
-	global url
+	global long_poll_url
 
 	print('{decor}{txt}{decor}'.format(decor='-'*6, txt='Listening long poll'))
 
 	while True:
 		if not long_poll_response:
-			long_poll_response = requests.post(url)
+			long_poll_response = requests.post(long_poll_url)
 		else:
-			continue # прошлый запрос не обработан
+			# прошлый ответ ещё не обработан
+			time.sleep(0.01)
 
 long_poll_process = Thread(target=listen_long_poll)
 
-def main():
-	print(__info__)
-
+def session():
 	global long_poll_response
-	global url
-	
-	long_poll_process.start()
+	global long_poll_url
 	last_rnd_id = 0
+	reply_count = 0
+	
+	print(__info__)
+	long_poll_process.start()
+
 	while True:
 		if not long_poll_response:
 			time.sleep(0.1)
 			continue
 
 		response = json.loads(long_poll_response.content)
-		url = client.make_url(keep_ts=response['ts'])
+		long_poll_url = client.make_url(keep_ts=response['ts'])
 		long_poll_response = None
+
 		print(response)
    
 		for update in response['updates']:
@@ -108,7 +110,7 @@ def main():
 					text = 'Кому нужна помощь?!'
 
 				elif re.sub('^( )*', '', text).startswith('/'):	
-
+					text = text[1:]
 					if text.startswith('/'):
 						mark_msg = False
 						text = text[1:]
@@ -131,13 +133,14 @@ def main():
 				else:
 					continue
 
-				last_rnd_id = update[7] + 1
+				last_rnd_id = update[7] + 3
 				client.reply(
 					uid = update[3],
 					text = text + "'" if mark_msg else text,
+					forward = update[1],
 					rnd_id = last_rnd_id
 				)
 				reply_count += 1
 
 if __name__ == '__main__':
-	main()
+	session()

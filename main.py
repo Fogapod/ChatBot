@@ -102,6 +102,9 @@ def session():
 						text.lower() == 'жень' or\
 						text.lower() == 'женька' or\
 						text.lower() == 'жека' or\
+						text.lower() == 'евгений' or\
+						text.lower() == 'ерш' or\
+						text.lower() == 'евгеха' or\
 						text.lower() == 'жэка':
 					text = 'А'
 

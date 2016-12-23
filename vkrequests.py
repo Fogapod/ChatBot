@@ -127,11 +127,11 @@ def send_message(**kwargs):
     rnd_id = kwargs['rnd_id']
 
     response = api.messages.send(
-        peer_id=uid,message=text,
+        peer_id=uid, message=text,
         forward_messages=forward,
-        chat_id=gid,random_id=rnd_id
+        chat_id=gid, random_id=rnd_id
     )
-
+    
     return response
 
 

@@ -49,7 +49,6 @@ while not client.authorization():
 
 client.save_full_message_history()
 	
-last_rnd_id = 0
 url = client.make_url() # url for long polling
 	
 long_poll_response = None
@@ -75,7 +74,7 @@ def main():
 	global url
 	
 	long_poll_process.start()
-
+	last_rnd_id = 0
 	while True:
 		if not long_poll_response:
 			time.sleep(0.1)

@@ -11,8 +11,8 @@ import json
 import re
 
 __version__ = '0.0.4'
-__author__ = 'Eugene Ershov - http://vk.com/fogapod'
-__source__ = 'https://github.com/Fogapod/ChatBot/'
+__author__ = 'Eugene Ershov - https://vk.com/fogapod'
+__source__ = 'https://github.com/Fogapod/ChatBot'
 	
 __info__ = '''
 Версия: {ver}-demo
@@ -97,17 +97,14 @@ def session():
 			# message != ''
 				text = update[6]
 				mark_msg = True
-				if text.lower() == u'ершов' or\
-						text.lower() == u'женя' or\
-						text.lower() == u'жень' or\
-						text.lower() == u'женька' or\
-						text.lower() == u'жека' or\
-						text.lower() == u'жэка':
+				if text.lower() == 'ершов' or\
+						text.lower() == 'женя' or\
+						text.lower() == 'жень' or\
+						text.lower() == 'женька' or\
+						text.lower() == 'жека' or\
+						text.lower() == 'жэка':
 					text = 'А'
 					mark_msg = False
-
-				elif 'HALP' in text:
-					text = 'Кому нужна помощь?!'
 
 				elif re.sub('^( )*', '', text).startswith('/'):	
 					text = text[1:]

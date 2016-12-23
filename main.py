@@ -12,11 +12,11 @@ import re
 
 __version__ = '0.0.4'
 __author__ = 'Eugene Ershov - https://vk.com/fogapod'
-__source__ = 'https://github.com/Fogapod/ChatBot'
+__source__ = 'https://github.com/Fogapod/ChatBot/tree/qpy2.7'
 	
 __info__ = '''
 Версия: {ver}-demo
-(demo версия не может вестм диалог)
+(demo версия не может вести диалог)
 
 Я умею:
 *Говорить то, что вы попросите
@@ -104,7 +104,6 @@ def session():
 						text.lower() == 'жека' or\
 						text.lower() == 'жэка':
 					text = 'А'
-					mark_msg = False
 
 				elif re.sub('^( )*', '', text).startswith('/'):	
 					text = text[1:]
@@ -129,12 +128,17 @@ def session():
 
 				else:
 					continue
+				
+				if update[5] != ' ... ':
+					resend_message = update[1]
+				else:
+					resend_message = None
 
 				last_rnd_id = update[7] + 3
 				client.reply(
 					uid = update[3],
 					text = text + "'" if mark_msg else text,
-					forward = update[1],
+					forward = resend_message,
 					rnd_id = last_rnd_id
 				)
 				reply_count += 1

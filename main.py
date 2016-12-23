@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 #qpy:2
 import vklogic as vkl
+from utils import parse_input
 
 from threading import Thread
 import random

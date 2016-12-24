@@ -9,8 +9,9 @@ import requests
 import time
 import json
 import re
+import math
 
-__version__ = '0.0.4'
+__version__ = '0.0.5'
 __author__ = 'Eugene Ershov - https://vk.com/fogapod'
 __source__ = 'https://github.com/Fogapod/ChatBot/tree/qpy2.7'
 	
@@ -21,6 +22,8 @@ __info__ = '''
 Я умею:
 *Говорить то, что вы попросите
 (/say ... |/скажи ... )
+*Производить математические операции
+(/calculate ... |/посчитай ... )
 *Вызывать помощь
 (/help |/помощь )
 *Вести диалог
@@ -108,6 +111,10 @@ def session():
 						text.lower() == 'жэка':
 					text = 'А'
 
+				elif text.lower() == 'how to praise the sun?' or\
+							 text.lower() == '🌞':
+					text = '\\[T]/\n..🌞\n...||\n'
+
 				elif re.sub('^( )*', '', text).startswith('/'):	
 					text = text[1:]
 					if text.startswith('/'):
@@ -125,7 +132,33 @@ def session():
 						text = __info__
 					elif re.match(u'^((скажи)|(say))', words[0].lower()):
 						del words[0]
-						text = ' '.join(words)
+					elif re.match(u'^((посчитай)|(calculate))', words[0].lower()):
+						del words[0]
+						words = ''.join(words).lower()
+						if not re.match(u'[^0-9\+\-*/().√^]', words) or re.match('sqrt\(\d+\)', words):
+							while True:
+								index = re.search('\d+[^.\d]', words)
+								if index:
+									words += ' '
+									index = index.end() - 1
+									words = words[:index] + '.' + words[index:]
+								else:
+									break
+							words = re.sub(u'(sqrt)|√', 'math.sqrt', words)
+							words = re.sub('\^', '**', words)
+							print words
+							try:
+								text = str(eval(words))
+							except SyntaxError:
+								text = 'Ошибка'
+							except NameError:
+								text = 'Ошибка'
+							except ZeroDivisionError:
+								text = 'Деление на 0'
+							except OverflowError:
+								text = 'Слишком большой результат'
+						else:
+							text = 'Не математическая операция'
 					else:
 						text = 'Попка молодец🐔' if random.randint(0,1) else 'Попка дурак🐔'
 

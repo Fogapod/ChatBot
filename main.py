@@ -150,9 +150,9 @@ def session():
 							try:
 								text = str(eval(words))
 							except SyntaxError:
-								text = 'Ошибка'
+								text = 'Ошибка [0]'
 							except NameError:
-								text = 'Ошибка'
+								text = 'Ошибка [1]'
 							except ZeroDivisionError:
 								text = 'Деление на 0'
 							except OverflowError:
@@ -161,6 +161,7 @@ def session():
 							text = 'Не математическая операция'
 					else:
 						text = 'Попка молодец🐔' if random.randint(0,1) else 'Попка дурак🐔'
+						text = 'Попка умеет считать лучше тебя 🐔' if random.randint(0,1) and random.randint(0,1) and  random.randint(0,1) else text
 
 				else:
 					continue

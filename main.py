@@ -136,16 +136,18 @@ def session():
 					elif re.match(u'^((посчитай)|(calculate))', words[0].lower()):
 						del words[0]
 						words = ''.join(words).lower()
-						if not re.match(u'[^0-9\+\-*/().√^]', words) or re.match('sqrt\(\d+\)', words):
+						if not re.match(u'[^\d+\-*/().,^√πe]', words) or re.match('(sqrt\(\d+\))|(pi)', words):
+							words = ' ' + words + ' '
+							words = re.sub(',', '.', words)
 							while True:
-								index = re.search('\d+[^.\d]', words)
+								index = re.search('[^.\d]\d+[^.\de]', words)
 								if index:
-									words += ' '
 									index = index.end() - 1
 									words = words[:index] + '.' + words[index:]
 								else:
 									break
 							words = re.sub(u'(sqrt)|√', 'math.sqrt', words)
+							words = re.sub(u'(pi)|π', 'math.pi', words)
 							words = re.sub('\^', '**', words)
 							print words
 							try:
@@ -154,6 +156,8 @@ def session():
 								text = 'Ошибка [0]'
 							except NameError:
 								text = 'Ошибка [1]'
+							except AttributeError:
+								text = 'Ошибка [2]'
 							except ZeroDivisionError:
 								text = 'Деление на 0'
 							except OverflowError:

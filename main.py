@@ -132,6 +132,7 @@ def session():
 						text = __info__
 					elif re.match(u'^((скажи)|(say))', words[0].lower()):
 						del words[0]
+						text = ''.join(words)
 					elif re.match(u'^((посчитай)|(calculate))', words[0].lower()):
 						del words[0]
 						words = ''.join(words).lower()

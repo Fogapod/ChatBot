@@ -161,15 +161,17 @@ class LongPollSession(object):
                     if not words: 
                         words = ' '
 
-                    if  re.match(u'^((help)|(помощь)|(info)|(инфо)|(информация)|\?)',\
+                    if  re.match(u'(^help)|(^помощь)|(^info)|(^инфо)|(^информация)|^\?$',\
                         words[0].lower()):
                         text = __info__
 						
-                    elif re.match(u'^((скажи)|(say))', words[0].lower()):
+                    elif re.match(u'(^скажи)|(^say)$', words[0].lower()):
                         del words[0]
                         text = ''.join(words)
+                        if text == '':
+                            continue
 						
-                    elif re.match(u'^((посчитай)|(calculate))', words[0].lower()):
+                    elif re.match(u'(^посчитай)|(^calculate)$', words[0].lower()):
                         del words[0]
                         words = ''.join(words).lower()
                         if not re.match(u'[^\d+\-*/:().,^√πe]', words) or re.match('(sqrt\(\d+\))|(pi)', words):
@@ -177,10 +179,13 @@ class LongPollSession(object):
                             words = re.sub(',', '.', words)
                             words = re.sub(':', '/', words)
                             while True:
-                                index = re.search('[^.\d]\d+[^.\de]', words)
-                                if index:
-                                    index = index.end() - 1
-                                    words = words[:index] + '.' + words[index:]
+                                if '/' in words:
+                                    index = re.search('[^.\d]\d+[^.\de]', words)
+                                    if index:
+                                        index = index.end() - 1
+                                        words = words[:index] + '.' + words[index:]
+                                    else:
+                                        break
                                 else:
                                     break
                             words = re.sub(u'(sqrt)|√', 'math.sqrt', words)
@@ -202,7 +207,7 @@ class LongPollSession(object):
                         else:
                             text = 'Не математическая операция'
                     
-                    elif re.match('stop', text.lower()):
+                    elif re.match(u'(^stop)|(^выйти)|(^exit)|(^стоп)|(^terminate)|(^завершить)|(^close)|^!$', text.lower()):
                         if update[2] == 1 or int(update[7]['from']) == self.SELF_ID:
                             text = self.exiting_text
                         else:

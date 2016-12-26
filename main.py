@@ -171,8 +171,12 @@ class LongPollSession(object):
                         if text == '':
                             continue
 						
-                    elif re.match(u'(^посчитай)|(^calculate)$', words[0].lower()):
-                        del words[0]
+                    elif re.match(u'(^посчитай)|(^calculate)|$', words[0].lower()) or\
+                         words[0].startswith('='):
+                        if words[0].startswith('='):
+                            words[0] = words[0][1:]
+                        else:
+                            del words[0]
                         words = ''.join(words).lower()
                         if not re.match(u'[^\d+\-*/:().,^√πe]', words) or re.match('(sqrt\(\d+\))|(pi)', words):
                             words = ' ' + words + ' '
@@ -221,15 +225,15 @@ class LongPollSession(object):
                     continue
 				
                 if update[5] != ' ... ':
-                    resend_message = update[1]
+                    message_to_resend = update[1]
                 else:
-                    resend_message = None
+                    message_to_resend = None
 
                 self.last_rnd_id = update[8] + 3
                 self.client.reply(
                     uid = update[3],
                     text = text + "'" if mark_msg else text,
-                    forward = resend_message,
+                    forward = message_to_resend,
                     rnd_id = self.last_rnd_id
                     )
                 self.reply_count += 1

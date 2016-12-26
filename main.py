@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-#qpy:2
 import vklogic as vkl
+import vkrequests as vkr
 from utils import parse_input
 
 from threading import Thread
@@ -46,144 +46,201 @@ sys.setdefaultencoding('utf-8')
 p = '/storage/emulated/0/'
 # qpy
 
-client = vkl.Client()
-	
-while not client.authorization():
-	continue
+class LongPollSession(object):
+    def __init__(self, client):
+        self.client = client
+        self.mlpd = mlpd = None # message_long_poll_data
+        #{
+        #   server: str,
+        #   key: int,
+        #   ts: int
+        #}
+        self.last_rnd_id = 0
+        self.reply_count = 0
+        self.message_long_poll_url = self._make_message_long_poll_url()
+        self.run_message_long_poll_process = True
+        self.message_long_poll_process = Thread(target=self._listen_message_long_poll)
+        self.message_long_poll_response = None
+        self.SELF_ID = vkr.get_self_id()
+        self.exiting_text = 'Завершаю программу'
 
-client.save_full_message_history()
-	
-long_poll_url = client.make_url() 
-long_poll_response = None
+    def __exit__(self):
+        self.run_message_long_poll_process = False
+        self.message_long_poll_response = []
+        exit()
+        
+    def _make_message_long_poll_url(self, keep_ts=False):
+        """
+        :keep_ts:
+            использовать значение ts, полученное в результате события {ts: 12345, updates: []} (предполагается, что все поля mlpd заполнены)
+        Возвращает: готовый url для осуществления long poll запроса
+        """
+        if keep_ts:
+            self.mlpd['ts'] = keep_ts
+        else: 
+            self.mlpd = vkr.get_message_long_poll_data()
 
-def listen_long_poll():
-	global long_poll_response
-	global long_poll_url
+        if self.mlpd:
+            url_pattern = 'https://{server}?act={act}&key={key}&ts={ts}&wait={w}&mode={m}&version={v}'
+            url = url_pattern.format(
+                server = self.mlpd['server'],
+                key = self.mlpd['key'],
+                ts = self.mlpd['ts'],
+                act = 'a_check',
+                w = 100,
+                m = 130,
+                v = 1
+            )
+            return url
 
-	print('{decor}{txt}{decor}'.format(decor='-'*6, txt='Listening long poll'))
 
-	while True:
-		if not long_poll_response:
-			long_poll_response = requests.post(long_poll_url)
-		else:
-			# прошлый ответ ещё не обработан
-			time.sleep(0.01)
+    def _listen_message_long_poll(self):
+        """
+        Позволяет получать новые события (нужно запускать отдельным потоком)
+        При получении события меняет значение переменной message_long_poll_response с None на ответ сервера
+        """
+        print('{decor}{txt}{decor}'.format(decor='-'*6, txt='Listening long poll'))
 
-long_poll_process = Thread(target=listen_long_poll)
+        while self.run_message_long_poll_process:
+            if not self.message_long_poll_response:
+                self.message_long_poll_response = vkr.do_message_long_poll_request(url=self.message_long_poll_url)
+            else:
+                # прошлый ответ ещё не обработан
+                time.sleep(0.01)
 
-def session():
-	global long_poll_response
-	global long_poll_url
-	last_rnd_id = 0
-	reply_count = 0
-	
-	print(__info__)
-	long_poll_process.start()
+    def process_updates(self):
+        print (__info__)
+        self.message_long_poll_process.start()
+        while True:
+            if not self.message_long_poll_response:
+                time.sleep(0.1)
+                continue
 
-	while True:
-		if not long_poll_response:
-			time.sleep(0.1)
-			continue
+            response = json.loads(self.message_long_poll_response.content)
+            self.message_long_poll_url = self._make_message_long_poll_url(keep_ts=response['ts'])
+            self.message_long_poll_response = None
 
-		response = json.loads(long_poll_response.content)
-		long_poll_url = client.make_url(keep_ts=response['ts'])
-		long_poll_response = None
+            print(response)
 
-		print(response)
-   
-		for update in response['updates']:
-			if update[0] == 4 and\
-					update[7] != last_rnd_id and\
-					update[6] != '':
-			# response == message
-			# message != last_message
-			# message != ''
-				text = update[6]
-				mark_msg = True
-				if text.lower() == 'ершов' or\
-						text.lower() == 'женя' or\
-						text.lower() == 'жень' or\
-						text.lower() == 'женька' or\
-						text.lower() == 'жека' or\
-						text.lower() == 'евгений' or\
-						text.lower() == 'ерш' or\
-						text.lower() == 'евгеха' or\
-						text.lower() == 'жэка':
-					text = 'А'
+            for update in response['updates']:
+                if  update[0] == 4 and\
+                    update[8] != self.last_rnd_id and\
+                    update[6] != '':
+                # response == message
+                # message != last_message
+                # message != ''
+                    text = update[6]
+                    mark_msg = True
+                else:
+                    continue
 
-				elif text.lower() == 'how to praise the sun?' or\
-							 text.lower() == '🌞':
-					text = '\\[T]/\n..🌞\n...||\n'
+                if  text.lower() == 'ершов' or\
+                    text.lower() == 'женя' or\
+                    text.lower() == 'жень' or\
+                    text.lower() == 'женька' or\
+                    text.lower() == 'жека' or\
+                    text.lower() == 'евгений' or\
+                    text.lower() == 'ерш' or\
+                    text.lower() == 'евгеха' or\
+                    text.lower() == 'жэка':
+                    text = 'А'
 
-				elif re.sub('^( )*', '', text).startswith('/'):	
-					text = text[1:]
-					if text.startswith('/'):
-						mark_msg = False
-						text = text[1:]
+                elif text.lower() == 'how to praise the sun?' or\
+                     text.lower() == '🌞':
+                    text = '\\[T]/\n..🌞\n...||\n'
 
-					text = parse_input(text, replace_vkurl=False, replace_nl=False)
-					words = text.split()
+                elif re.sub('^( )*', '', text).startswith('/'):	
+                    text = text[1:]
+                    if text.startswith('/'):
+                        mark_msg = False
+                        text = text[1:]
 
-					if not words: 
-						words = ' '
+                    text = parse_input(text, replace_vkurl=False, replace_nl=False)
+                    words = text.split()
 
-					if re.match(u'^((help)|(помощь)|(info)|(инфо)|(информация)|\?)',\
-							words[0].lower()):
-						text = __info__
-					elif re.match(u'^((скажи)|(say))', words[0].lower()):
-						del words[0]
-						text = ''.join(words)
-					elif re.match(u'^((посчитай)|(calculate))', words[0].lower()):
-						del words[0]
-						words = ''.join(words).lower()
-						if not re.match(u'[^\d+\-*/().,^√πe]', words) or re.match('(sqrt\(\d+\))|(pi)', words):
-							words = ' ' + words + ' '
-							words = re.sub(',', '.', words)
-							while True:
-								index = re.search('[^.\d]\d+[^.\de]', words)
-								if index:
-									index = index.end() - 1
-									words = words[:index] + '.' + words[index:]
-								else:
-									break
-							words = re.sub(u'(sqrt)|√', 'math.sqrt', words)
-							words = re.sub(u'(pi)|π', 'math.pi', words)
-							words = re.sub('\^', '**', words)
-							print words
-							try:
-								text = str(eval(words))
-							except SyntaxError:
-								text = 'Ошибка [0]'
-							except NameError:
-								text = 'Ошибка [1]'
-							except AttributeError:
-								text = 'Ошибка [2]'
-							except ZeroDivisionError:
-								text = 'Деление на 0'
-							except OverflowError:
-								text = 'Слишком большой результат'
-						else:
-							text = 'Не математическая операция'
-					else:
-						text = 'Попка молодец🐔' if random.randint(0,1) else 'Попка дурак🐔'
-						text = 'Попка умеет считать лучше тебя 🐔' if random.randint(0,1) and random.randint(0,1) and  random.randint(0,1) else text
+                    if not words: 
+                        words = ' '
 
-				else:
-					continue
+                    if  re.match(u'^((help)|(помощь)|(info)|(инфо)|(информация)|\?)',\
+                        words[0].lower()):
+                        text = __info__
+						
+                    elif re.match(u'^((скажи)|(say))', words[0].lower()):
+                        del words[0]
+                        text = ''.join(words)
+						
+                    elif re.match(u'^((посчитай)|(calculate))', words[0].lower()):
+                        del words[0]
+                        words = ''.join(words).lower()
+                        if not re.match(u'[^\d+\-*/:().,^√πe]', words) or re.match('(sqrt\(\d+\))|(pi)', words):
+                            words = ' ' + words + ' '
+                            words = re.sub(',', '.', words)
+                            words = re.sub(':', '/', words)
+                            while True:
+                                index = re.search('[^.\d]\d+[^.\de]', words)
+                                if index:
+                                    index = index.end() - 1
+                                    words = words[:index] + '.' + words[index:]
+                                else:
+                                    break
+                            words = re.sub(u'(sqrt)|√', 'math.sqrt', words)
+                            words = re.sub(u'(pi)|π', 'math.pi', words)
+                            words = re.sub('\^', '**', words)
+                            print words
+                            try:
+                                text = str(eval(words))
+                            except SyntaxError:
+                                text = 'Ошибка [0]'
+                            except NameError:
+                                text = 'Ошибка [1]'
+                            except AttributeError:
+                                text = 'Ошибка [2]'        
+                            except ZeroDivisionError:
+                                text = 'Деление на 0'
+                            except OverflowError:
+                                text = 'Слишком большой результат'
+                        else:
+                            text = 'Не математическая операция'
+                    
+                    elif re.match('stop', text.lower()):
+                        if update[2] == 1 or int(update[7]['from']) == self.SELF_ID:
+                            text = self.exiting_text
+                        else:
+                            text = 'Доступ к команде ограничен'
+                    
+                    else:
+                        text = 'Попка молодец🐔' if random.randint(0,1) else 'Попка дурак🐔'
+                        text = 'Попка умеет считать лучше тебя 🐔' if random.randint(0,1) and random.randint(0,1) and  random.randint(0,1) else text
+
+                else:
+                    continue
 				
-				if update[5] != ' ... ':
-					resend_message = update[1]
-				else:
-					resend_message = None
+                if update[5] != ' ... ':
+                    resend_message = update[1]
+                else:
+                    resend_message = None
 
-				last_rnd_id = update[7] + 3
-				client.reply(
-					uid = update[3],
-					text = text + "'" if mark_msg else text,
-					forward = resend_message,
-					rnd_id = last_rnd_id
-				)
-				reply_count += 1
+                self.last_rnd_id = update[8] + 3
+                self.client.reply(
+                    uid = update[3],
+                    text = text + "'" if mark_msg else text,
+                    forward = resend_message,
+                    rnd_id = self.last_rnd_id
+                    )
+                self.reply_count += 1
+                if text == self.exiting_text:
+                    self.__exit__()
+
+def main():
+    client = vkl.Client()
+	
+    while not client.authorization():
+        continue
+
+    client.save_full_message_history()
+    
+    session = LongPollSession(client=client)
+    session.process_updates()
 
 if __name__ == '__main__':
-	session()
+    main()

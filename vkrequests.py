@@ -18,6 +18,8 @@ def vk_request_errors(request):
 
 			elif 'Failed to establish a new connection' in error:
 				print('Check your connection!')
+				time.sleep(0.66)
+				return request_errors(*args, **kwargs)
 
 			elif 'incorrect password' in error:
 				print('Incorrect password!')

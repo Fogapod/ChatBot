@@ -23,9 +23,11 @@ __info__ = '''
 *Говорить то, что вы попросите
 (/say ... |/скажи ... )
 *Производить математические операции
-(/calculate ... |/посчитай ... )
+(/calculate ... |/посчитай ... ) =
+*Проверить число на натуральность (99% точности)
+(/prime ... |/натуральное ... ) %
 *Вызывать помощь
-(/help |/помощь )
+(/help |/помощь ) ?
 *Вести диалог
 (/... )
 
@@ -117,7 +119,10 @@ class LongPollSession(object):
                 continue
 
             response = json.loads(self.message_long_poll_response.content)
-            self.message_long_poll_url = self._make_message_long_poll_url(keep_ts=response['ts'])
+            try:
+                self.message_long_poll_url = self._make_message_long_poll_url(keep_ts=response['ts'])
+            except KeyError:
+                print(response)
             self.message_long_poll_response = None
 
             print(response)
@@ -167,7 +172,7 @@ class LongPollSession(object):
 						
                     elif re.match(u'(^скажи)|(^say)$', words[0].lower()):
                         del words[0]
-                        text = ''.join(words)
+                        text = ' '.join(words)
                         if text == '':
                             continue
 						
@@ -211,11 +216,53 @@ class LongPollSession(object):
                         else:
                             text = 'Не математическая операция'
                     
-                    elif re.match(u'(^stop)|(^выйти)|(^exit)|(^стоп)|(^terminate)|(^завершить)|(^close)|^!$', text.lower()):
-                        if update[2] == 1 or int(update[7]['from']) == self.SELF_ID:
-                            text = self.exiting_text
+                    elif re.match(u'(^stop)|(^выйти)|(^exit)|(^стоп)|(^terminate)|(^завершить)|(^close)|^!$', words[0].lower()):
+                        if 'from' in update[7]:
+                            if int(update[7]['from']) == self.SELF_ID:
+                                text = self.exiting_text
                         else:
-                            text = 'Доступ к команде ограничен'
+                            out = False
+                            sum_flags = update[2]
+                            for flag in [512,256,128,64,32,16,8,4]:
+                                if sum_flags == 3 or sum_flags == 2:
+                                    out = True
+                                    break
+                                if sum_flags - flag <= 0:
+                                    continue
+                                else:
+                                    if sum_flags - flag == 3 or sum_flags - flag == 2:
+                                        out = True
+                                        break
+                                    else:
+                                        sum_flags -= flag
+                            if out:
+                                text = self.exiting_text
+                            else:
+                                text = 'Доступ к команде ограничен'
+                    
+                    elif re.match(u'(^натуральное)|(^prime)|%$', words[0].lower()):
+                        del words[0]
+                        input_number = ''.join(words)
+                        if re.match('^\d+$', input_number) and len(input_number)<=5:
+                            input_number = int(input_number)
+                            luc_number = 0
+                            last_luc_number = 0
+                            for i in range(input_number):
+                                if luc_number == 0:
+                                    luc_number = 1
+                                elif luc_number == 1:
+                                    last_luc_number = luc_number
+                                    luc_number = 3
+                                else:
+                                    luc_number, last_luc_number = last_luc_number + luc_number, luc_number
+                            
+                            if input_number != 0:
+                                is_prime = True if (luc_number - 1) % input_number == 0 else False
+                                text = 'Натуральное' if is_prime else 'Не натуральное'
+                            else:
+                                text = '0 не является натуральным числом'
+                        else:
+                            text = 'Дано неверное или слишком большое значение'
                     
                     else:
                         text = 'Попка молодец🐔' if random.randint(0,1) else 'Попка дурак🐔'
@@ -230,7 +277,7 @@ class LongPollSession(object):
                     message_to_resend = None
 
                 self.last_rnd_id = update[8] + 3
-                self.client.reply(
+                vkr.send_message(
                     uid = update[3],
                     text = text + "'" if mark_msg else text,
                     forward = message_to_resend,
@@ -246,7 +293,7 @@ def main():
     while not client.authorization():
         continue
 
-    client.save_full_message_history()
+    #client.save_full_message_history()
     
     session = LongPollSession(client=client)
     session.process_updates()

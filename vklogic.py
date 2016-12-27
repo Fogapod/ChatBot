@@ -136,8 +136,18 @@ class Client:
 				print('Завершена обработка диалога №{}/{}'.format(k*200+d+1, messages_list['count']))
 			messages_list = vkr.get_messages_list(offset=(k+1)*200)
 
-	def reply(self, **kwargs):
-		vkr.send_message(**kwargs)
+	def flood(self, chat_id):
+		while True:
+			ans = raw_input('Начать флуд в {}? (Y/N) '.format(chat_id)) 
+			if ans.upper() == 'Y':
+				print('Начинаю флудить...')
+				for i in range(1000):
+					vkr.send_message(text=str(i+1),uid=chat_id,rnd_id=i)
+					time.sleep(2)
+			elif ans.upper() == 'N':
+				break
+			else:
+				print('Ответ не распознан, повторите')
 
 	def make_url(self, keep_ts=False):
 		# long poll request url

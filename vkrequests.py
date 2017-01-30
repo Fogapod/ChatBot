@@ -5,52 +5,49 @@ import requests as r
 import vk
 
 def vk_request_errors(request):
-	def request_errors(*args, **kwargs):
-		# response = request(*args, **kwargs); time.sleep(0.66)
-		# Для вывода ошибки в консоль
-		try:
-			response = request(*args, **kwargs)
-		except Exception as error:
-			error = str(error)
-			if 'Too many requests per second' in error or 'timed out' in error:
-				time.sleep(0.33)
-				return request_errors(*args, **kwargs)
+    def request_errors(*args, **kwargs):
+        # response = request(*args, **kwargs); time.sleep(0.66)
+        # Для вывода ошибки в консоль
+        try:
+            response = request(*args, **kwargs)
+        except Exception as error:
+            error = str(error)
+            if 'Too many requests per second' in error or 'timed out' in error:
+                time.sleep(0.33)
+                return request_errors(*args, **kwargs)
 
-			elif 'Failed to establish a new connection' in error:
-				print('Check your connection!')
-				time.sleep(0.66)
-				return request_errors(*args, **kwargs)
+            elif 'Failed to establish a new connection' in error:
+                print('Check your connection!')
+                time.sleep(2)
+                return request_errors(*args, **kwargs)
 
-			elif 'incorrect password' in error:
-				print('Incorrect password!')
+            elif 'incorrect password' in error:
+                print('Incorrect password!')
 
-			elif 'Read timed out' in error or 'Connection aborted' in error:
-				print('WARNING\nResponse time exceeded!')
-				time.sleep(0.66)
-				return request_errors(*args, **kwargs)
+            elif 'Read timed out' in error or 'Connection aborted' in error:
+                print('WARNING\nResponse time exceeded!')
+                time.sleep(0.66)
+                return request_errors(*args, **kwargs)
 
-			elif 'Failed loading' in error:
-				raise
+            elif 'Failed loading' in error:
+                raise
 
-			elif 'Captcha' in error:
-				print('Capthca!!!!!')
-				#TODO обработать капчу
+            elif 'Captcha' in error:
+                print('Capthca!!!!!')
+                #TODO обработать капчу
 
-			elif 'Failed receiving session' in error:
-				print('Error receiving session!')
+            elif 'Failed receiving session' in error:
+                print('Error receiving session!')
 
-			elif 'Auth check code is needed' in error:
-				print('Auth code is needed!')
+            elif 'Auth check code is needed' in error:
+                print('Auth code is needed!')
 
-			else:
-				if not api:
-					print('Authentication required')
-				else:
-					print('\nERROR! ' + error + '\n')
-			return False
-		else:
-			return response
-	return request_errors
+            else:
+                print('\nERROR! ' + error + '\n')
+            return False
+        else:
+            return response
+    return request_errors
 
 
 @vk_request_errors
@@ -132,34 +129,6 @@ def send_message(**kwargs):
         chat_id=gid, random_id=rnd_id
     )
     
-    return response
-
-
-@vk_request_errors
-def get_messages_list(**kwargs):
-    """
-    """
-    offset = str(kwargs.get('offset', '0'))
-    count = '200'
-
-    response = api.messages.getDialogs(
-        count=count, offset=offset
-        )
-    return response
-
-
-@vk_request_errors
-def get_messages(**kwargs):
-    """
-    """
-    count = '200'
-    offset = str(kwargs.get('offset', '0'))
-    friend_id = kwargs['uid']
-
-    response = api.messages.getHistory(
-        count=count, offset=offset,
-        rev='1', user_id=friend_id
-        )
     return response
 
 

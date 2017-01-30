@@ -1,23 +1,20 @@
 # -*- coding: utf-8 -*-
-import vklogic as vkl
 import vkrequests as vkr
 from utils import parse_input
 
 from threading import Thread
-import random
 import requests
 import time
 import json
 import re
 import math
 
-__version__ = '0.0.6-demo'
+__version__ = '0.1.0-demo'
 __author__ = 'Eugene Ershov - https://vk.com/fogapod'
 __source__ = 'https://github.com/Fogapod/ChatBot/tree/qpy2.7'
-	
+    
 __help__ = '''
 Версия: {ver}
-(demo версия не может вести диалог)
 
 Я умею:
 *Говорить то, что вы попросите
@@ -34,7 +31,7 @@ __help__ = '''
 Автор: {author}
 Мой исходный код: {source}
 '''.format(\
-	ver = __version__, author = __author__, source = __source__
+    ver = __version__, author = __author__, source = __source__
 )
 
 # qpy
@@ -43,37 +40,52 @@ logging.captureWarnings(True)
 import sys
 reload(sys)
 sys.setdefaultencoding('utf-8')
-p = '/storage/emulated/0/'
 # qpy
 
 class LongPollSession(object):
-    def __init__(self, client, bot):
-        self.client = client
+    def __init__(self, bot):
         self.bot = bot
-        self.mlpd = None # message_long_poll_data
-        #{
-        #   server: str,
-        #   key: int,
-        #   ts: int
-        #}
         self.run_self = True
-        self.last_rnd_id = 0
-        self.reply_count = 0
-        self.message_long_poll_url = self._make_message_long_poll_url()
-        self.run_message_long_poll_process = True
-        self.message_long_poll_process = Thread(target=self._listen_message_long_poll)
-        self.message_long_poll_response = None
-        self.SELF_ID = vkr.get_self_id()
 
     def __exit__(self):
         self.run_message_long_poll_process = False
         self.message_long_poll_response = []
         exit()
-        
+
+    def authorization(self, token_path):
+        authorized = False
+        try:
+            with open(token_path, 'r') as token_file:
+                token = token_file.readlines()[0][:-1]
+        except IOError:
+            token = None
+
+        if token:
+            if vkr.log_in(token=token):
+                self.SELF_ID = vkr.get_user_id()
+                authorized = True
+            else:
+                open(token_path, 'w').close()
+
+        else:
+            login, password = raw_input('Login: '), raw_input('Password: ')
+            new_token = vkr.log_in(login=login, password=password)
+            if new_token:
+                with open(token_path, 'w') as token_file:
+                    token_file.write('{}\n{}'.format(\
+                        new_token, 'НИКОМУ НЕ ПОКАЗЫВАЙТЕ СОДЕРЖИМОЕ ЭТОГО ФАЙЛА'
+                        )
+                    )
+                self.SELF_ID = vkr.get_user_id()
+                authorized = True
+
+        return authorized
+
     def _make_message_long_poll_url(self, keep_ts=False):
         """
         :keep_ts:
-            использовать значение ts, полученное в результате события {ts: 12345, updates: []} (предполагается, что все поля mlpd заполнены)
+            использовать значение ts, полученное в результате события {ts: 12345, updates: []} 
+            (предполагается, что все поля mlpd заполнены)
         Возвращает: готовый url для осуществления long poll запроса
         """
         if keep_ts:
@@ -94,7 +106,6 @@ class LongPollSession(object):
             )
             return url
 
-
     def _listen_message_long_poll(self):
         """
         Позволяет получать новые события (нужно запускать отдельным потоком)
@@ -109,12 +120,39 @@ class LongPollSession(object):
                 # прошлый ответ ещё не обработан
                 time.sleep(0.01)
 
+    def flood(self, chat_id):
+        while True:
+            ans = raw_input('Начать флуд в {}? (Y/N) '.format(chat_id)) 
+            if ans.upper() == 'Y':
+                print('Начинаю флудить...')
+                for i in range(1000):
+                    vkr.send_message(text=str(i+1),uid=chat_id,rnd_id=i)
+                    time.sleep(2)
+            elif ans.upper() == 'N':
+                break
+            else:
+                print('Ответ не распознан, повторите')
+
     def process_updates(self):
         print (__help__)
+        self.mlpd = None # message_long_poll_data
+        #{
+        #   server: str,
+        #   key: int,
+        #   ts: int
+        #}
+        self.message_long_poll_url = self._make_message_long_poll_url()
+        self.message_long_poll_process = Thread(target=self._listen_message_long_poll)
+        self.message_long_poll_response = None
+        self.run_message_long_poll_process = True
         self.message_long_poll_process.start()
+
+        self.last_rnd_id = 0
+        self.reply_count = 0
+
         while True:
             if not self.message_long_poll_response:
-                time.sleep(0.1)
+                time.sleep(1)
                 continue
 
             response = json.loads(self.message_long_poll_response.content)
@@ -158,7 +196,7 @@ class LongPollSession(object):
                      text.lower() == '🌞':
                     text = '\\[T]/\n..🌞\n...||\n'
 
-                elif re.sub('^( )*', '', text).startswith('/'):	
+                elif re.sub('^( )*', '', text).startswith('/'): 
                     text = text[1:]
                     if text.startswith('/'):
                         mark_msg = False
@@ -176,7 +214,7 @@ class LongPollSession(object):
 
                     elif re.match(u'(^скажи)|(^say)$', words[0].lower()):
                         text = self.bot.say(words)
-						
+                        
                     elif re.match(u'(^посчитай)|(^calculate)|$', words[0].lower()) or\
                          words[0].startswith('='):
                         text = self.bot.calculate(words)
@@ -189,16 +227,12 @@ class LongPollSession(object):
 
                     else:
                         text = 'Неизвестная команда. Вы можете использовать /help для получения списка команд.'
-                    '''
-                        text = 'Попка молодец🐔' if random.randint(0,1) else 'Попка дурак🐔'
-                        text = 'Попка умеет считать лучше тебя 🐔' if random.randint(0,1) and random.randint(0,1) and  random.randint(0,1) else text
-                    '''
                 else:
                     continue
                 
                 if not text:
                     continue
-				
+                
                 if update[5] != ' ... ':
                     message_to_resend = update[1]
                 else:
@@ -339,19 +373,14 @@ class Bot(object):
             return False
 
 def main():
-    bot = Bot()
-    client = vkl.Client()
-    
-    while not client.authorization():
+    session = LongPollSession(bot=Bot())
+    while not session.authorization(token_path='data/token.txt'):
         continue
 
-    #client.save_full_message_history()
-    #client.flood(chat_id=2000000127)
-
-    session = LongPollSession(client=client, bot=bot)
+    #session.flood(chat_id=2000000127)
     session.process_updates()
 
-def debug():
+def bot_debug():
     bot = Bot()
     while True:
         command = raw_input('command: ').lower()
@@ -361,4 +390,4 @@ def debug():
 
 if __name__ == '__main__':
     main()
-    #debug()
+    #bot_debug()

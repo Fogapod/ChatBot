@@ -189,7 +189,7 @@ class LongPollSession(object):
 
                     else:
                         text = 'Неизвестная команда. Вы можете использовать /help для получения списка команд.'
-                    '''else:
+                    '''
                         text = 'Попка молодец🐔' if random.randint(0,1) else 'Попка дурак🐔'
                         text = 'Попка умеет считать лучше тебя 🐔' if random.randint(0,1) and random.randint(0,1) and  random.randint(0,1) else text
                     '''
@@ -204,7 +204,8 @@ class LongPollSession(object):
                 else:
                     message_to_resend = None
 
-                self.last_rnd_id = update[8] + 3
+                self.last_rnd_id = update[8] + 9
+
                 vkr.send_message(
                     uid = update[3],
                     text = text + "'" if mark_msg else text,
@@ -304,13 +305,15 @@ class Bot(object):
         return result
 
     def stop(self, response, self_id):
+        refuse = True
+        text = 'Отказано в доступе'
         if 'from' in response[7]:
-            if int(update[7]['from']) == self_id:
+            if int(response[7]['from']) == self_id:
                 text = 'Завершаю программу'
                 refuse = False
         else:
             out = False
-            sum_flags = update[2]
+            sum_flags = response[2]
             for flag in [512,256,128,64,32,16,8,4]:
                 if sum_flags == 3 or sum_flags == 2:
                     out = True
@@ -326,9 +329,6 @@ class Bot(object):
             if out:
                 text = 'Завершаю программу'
                 refuse = False
-            else:
-                text = 'Доступ к команде ограничен'
-                refuse = True
 
         return refuse, text
 

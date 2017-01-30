@@ -374,7 +374,7 @@ class Bot(object):
 
 def main():
     session = LongPollSession(bot=Bot())
-    while not session.authorization(token_path='data/token.txt'):
+    while not session.authorization(token_path='/storage/emulated/0/Git/ChatBot/data/token.txt'):
         continue
 
     #session.flood(chat_id=2000000127)

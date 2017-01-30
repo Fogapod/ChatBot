@@ -11,12 +11,12 @@ import json
 import re
 import math
 
-__version__ = '0.0.5'
+__version__ = '0.0.6-demo'
 __author__ = 'Eugene Ershov - https://vk.com/fogapod'
 __source__ = 'https://github.com/Fogapod/ChatBot/tree/qpy2.7'
 	
-__info__ = '''
-Версия: {ver}-demo
+__help__ = '''
+Версия: {ver}
 (demo версия не может вести диалог)
 
 Я умею:
@@ -24,8 +24,8 @@ __info__ = '''
 (/say ... |/скажи ... )
 *Производить математические операции
 (/calculate ... |/посчитай ... ) =
-*Проверить число на натуральность (99% точности)
-(/prime ... |/натуральное ... ) %
+*Проверять, простое ли число (99% точности)
+(/prime ... |/простое ... ) %
 *Вызывать помощь
 (/help |/помощь ) ?
 *Вести диалог
@@ -49,14 +49,16 @@ p = '/storage/emulated/0/'
 # qpy
 
 class LongPollSession(object):
-    def __init__(self, client):
+    def __init__(self, client, bot):
         self.client = client
-        self.mlpd = mlpd = None # message_long_poll_data
+        self.bot = bot
+        self.mlpd = None # message_long_poll_data
         #{
         #   server: str,
         #   key: int,
         #   ts: int
         #}
+        self.run_self = True
         self.last_rnd_id = 0
         self.reply_count = 0
         self.message_long_poll_url = self._make_message_long_poll_url()
@@ -64,7 +66,6 @@ class LongPollSession(object):
         self.message_long_poll_process = Thread(target=self._listen_message_long_poll)
         self.message_long_poll_response = None
         self.SELF_ID = vkr.get_self_id()
-        self.exiting_text = 'Завершаю программу'
 
     def __exit__(self):
         self.run_message_long_poll_process = False
@@ -111,7 +112,7 @@ class LongPollSession(object):
                 time.sleep(0.01)
 
     def process_updates(self):
-        print (__info__)
+        print (__help__)
         self.message_long_poll_process.start()
         while True:
             if not self.message_long_poll_response:
@@ -122,7 +123,12 @@ class LongPollSession(object):
             try:
                 self.message_long_poll_url = self._make_message_long_poll_url(keep_ts=response['ts'])
             except KeyError:
-                print(response)
+                if 'failed' in response:
+                    self.mlpd = None
+                    self.message_long_poll_url = self._make_message_long_poll_url()
+                    self.message_long_poll_response = None
+                    continue
+
             self.message_long_poll_response = None
 
             print(response)
@@ -168,107 +174,31 @@ class LongPollSession(object):
 
                     if  re.match(u'(^help)|(^помощь)|(^info)|(^инфо)|(^информация)|^\?$',\
                         words[0].lower()):
-                        text = __info__
-						
+                        text = self.bot.help()
+
                     elif re.match(u'(^скажи)|(^say)$', words[0].lower()):
-                        del words[0]
-                        text = ' '.join(words)
-                        if text == '':
-                            continue
+                        text = self.bot.say(words)
 						
                     elif re.match(u'(^посчитай)|(^calculate)|$', words[0].lower()) or\
                          words[0].startswith('='):
-                        if words[0].startswith('='):
-                            words[0] = words[0][1:]
-                        else:
-                            del words[0]
-                        words = ''.join(words).lower()
-                        if not re.match(u'[^\d+\-*/:().,^√πe]', words) or re.match('(sqrt\(\d+\))|(pi)', words):
-                            words = ' ' + words + ' '
-                            words = re.sub(',', '.', words)
-                            words = re.sub(':', '/', words)
-                            while True:
-                                if '/' in words:
-                                    index = re.search('[^.\d]\d+[^.\de]', words)
-                                    if index:
-                                        index = index.end() - 1
-                                        words = words[:index] + '.' + words[index:]
-                                    else:
-                                        break
-                                else:
-                                    break
-                            words = re.sub(u'(sqrt)|√', 'math.sqrt', words)
-                            words = re.sub(u'(pi)|π', 'math.pi', words)
-                            words = re.sub('\^', '**', words)
-                            print words
-                            try:
-                                text = str(eval(words))
-                            except SyntaxError:
-                                text = 'Ошибка [0]'
-                            except NameError:
-                                text = 'Ошибка [1]'
-                            except AttributeError:
-                                text = 'Ошибка [2]'        
-                            except ZeroDivisionError:
-                                text = 'Деление на 0'
-                            except OverflowError:
-                                text = 'Слишком большой результат'
-                        else:
-                            text = 'Не математическая операция'
-                    
+                        text = self.bot.calculate(words)
+                                        
+                    elif re.match(u'(^простое)|(^prime)|%$', words[0].lower()):
+                        text = self.bot.prime(words)
+
                     elif re.match(u'(^stop)|(^выйти)|(^exit)|(^стоп)|(^terminate)|(^завершить)|(^close)|^!$', words[0].lower()):
-                        if 'from' in update[7]:
-                            if int(update[7]['from']) == self.SELF_ID:
-                                text = self.exiting_text
-                        else:
-                            out = False
-                            sum_flags = update[2]
-                            for flag in [512,256,128,64,32,16,8,4]:
-                                if sum_flags == 3 or sum_flags == 2:
-                                    out = True
-                                    break
-                                if sum_flags - flag <= 0:
-                                    continue
-                                else:
-                                    if sum_flags - flag == 3 or sum_flags - flag == 2:
-                                        out = True
-                                        break
-                                    else:
-                                        sum_flags -= flag
-                            if out:
-                                text = self.exiting_text
-                            else:
-                                text = 'Доступ к команде ограничен'
-                    
-                    elif re.match(u'(^натуральное)|(^prime)|%$', words[0].lower()):
-                        del words[0]
-                        input_number = ''.join(words)
-                        if re.match('^\d+$', input_number) and len(input_number)<=5:
-                            input_number = int(input_number)
-                            luc_number = 0
-                            last_luc_number = 0
-                            for i in range(input_number):
-                                if luc_number == 0:
-                                    luc_number = 1
-                                elif luc_number == 1:
-                                    last_luc_number = luc_number
-                                    luc_number = 3
-                                else:
-                                    luc_number, last_luc_number = last_luc_number + luc_number, luc_number
-                            
-                            if input_number != 0:
-                                is_prime = True if (luc_number - 1) % input_number == 0 else False
-                                text = 'Натуральное' if is_prime else 'Не натуральное'
-                            else:
-                                text = '0 не является натуральным числом'
-                        else:
-                            text = 'Дано неверное или слишком большое значение'
-                    
+                        self.run_self, text = self.bot.stop(response=update, self_id=self.SELF_ID)
+
                     else:
+                        text = 'Неизвестная команда. Вы можете использовать /help для получения списка команд.'
+                    '''else:
                         text = 'Попка молодец🐔' if random.randint(0,1) else 'Попка дурак🐔'
                         text = 'Попка умеет считать лучше тебя 🐔' if random.randint(0,1) and random.randint(0,1) and  random.randint(0,1) else text
-
+                    '''
                 else:
+                    continue
+                
+                if not text:
                     continue
 				
                 if update[5] != ' ... ':
@@ -284,19 +214,153 @@ class LongPollSession(object):
                     rnd_id = self.last_rnd_id
                     )
                 self.reply_count += 1
-                if text == self.exiting_text:
+
+                if not self.run_self:
                     self.__exit__()
 
+class Bot(object):
+    def __init__(self):
+        pass
+    
+    def help(self):
+        return __help__
+    
+    def say(self, words):
+        argument_required = self._argument_missing(words)
+        if argument_required:
+            return argument_required
+
+        del words[0]
+        return ' '.join(words)
+        
+    def calculate(self, words):
+        argument_required = self._argument_missing(words)
+        if argument_required:
+            return argument_required
+
+        if words[0].startswith('='):
+            words[0] = words[0][1:]
+        else:
+            del words[0]
+        words = ''.join(words).lower()
+        if not re.match(u'[^\d+\-*/:().,^√πe]', words) or re.match('(sqrt\(\d+\))|(pi)', words):
+            words = ' ' + words + ' '
+            words = re.sub(u'(sqrt)|√', 'math.sqrt', words)
+            words = re.sub(u'(pi)|π', 'math.pi', words)
+            words = re.sub('\^', '**', words)
+            words = re.sub(',', '.', words)
+            words = re.sub(':', '/', words)            
+            while True:
+                if '/' in words:
+                    index = re.search('[^.\d]\d+[^.\de]', words)
+                    if index:
+                        index = index.end() - 1
+                        words = words[:index] + '.' + words[index:]
+                    else:
+                        break
+                else:
+                    break
+            try:
+                result = str(eval(words))
+            except SyntaxError:
+                result = 'Ошибка [0]'
+            except NameError:
+                result = 'Ошибка [1]'
+            except AttributeError:
+                result = 'Ошибка [2]'        
+            except ZeroDivisionError:
+                result = 'Деление на 0'
+            except OverflowError:
+                result = 'Слишком большой результат'
+        else:
+            result = 'Не математическая операция'
+        return result
+            
+    def prime(self, words):
+        argument_required = self._argument_missing(words)
+        if argument_required:
+            return argument_required
+
+        del words[0]
+        input_number = ''.join(words)
+        if re.match('^\d+$', input_number) and len(input_number)<=5:
+            input_number = int(input_number)
+            luc_number = 0
+            last_luc_number = 0
+            for i in range(input_number):
+                if luc_number == 0:
+                    luc_number = 1
+                elif luc_number == 1:
+                    last_luc_number = luc_number
+                    luc_number = 3
+                else:
+                    luc_number, last_luc_number = last_luc_number + luc_number, luc_number
+                            
+            if input_number != 0:
+                is_prime = True if (luc_number - 1) % input_number == 0 else False
+                result = 'Является простым числом' if is_prime else 'Не является простым числом'
+            else:
+                result = '0 не является простым числом'
+        else:
+            result = 'Дано неверное или слишком большое значение'
+        return result
+
+    def stop(self, response, self_id):
+        if 'from' in response[7]:
+            if int(update[7]['from']) == self_id:
+                text = 'Завершаю программу'
+                refuse = False
+        else:
+            out = False
+            sum_flags = update[2]
+            for flag in [512,256,128,64,32,16,8,4]:
+                if sum_flags == 3 or sum_flags == 2:
+                    out = True
+                    break
+                if sum_flags - flag <= 0:
+                    continue
+                else:
+                    if sum_flags - flag == 3 or sum_flags - flag == 2:
+                        out = True
+                        break
+                    else:
+                        sum_flags -= flag
+            if out:
+                text = 'Завершаю программу'
+                refuse = False
+            else:
+                text = 'Доступ к команде ограничен'
+                refuse = True
+
+        return refuse, text
+
+    def _argument_missing(self, words):
+        if len(words) == 1:
+            return 'Команду необходимо использовать с аргументом'
+        else:
+            return False
+
 def main():
+    bot = Bot()
     client = vkl.Client()
-	
+    
     while not client.authorization():
         continue
 
     #client.save_full_message_history()
-    
-    session = LongPollSession(client=client)
+    #client.flood(chat_id=2000000127)
+
+    session = LongPollSession(client=client, bot=bot)
     session.process_updates()
+
+def debug():
+    bot = Bot()
+    while True:
+        command = raw_input('command: ').lower()
+        args = ('command ' + raw_input('args: ')).split(' ')
+        try: print eval('bot.' + command + '(' + str(args) + ')')
+        except Exception as e: print 'error! ' + str(e)
 
 if __name__ == '__main__':
     main()
+    #debug()
